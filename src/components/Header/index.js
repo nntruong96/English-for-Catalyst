@@ -3,7 +3,7 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React from 'react';
-import { Flex, Image } from '@chakra-ui/react';
+import { Flex, Image, Container } from '@chakra-ui/react';
 import logo from 'images/site-logo.png';
 import GroupButtonAuth from 'components/GroupButtonAuth';
 import { Link } from 'react-router-dom';

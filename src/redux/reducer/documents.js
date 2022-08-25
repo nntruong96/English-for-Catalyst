@@ -3,8 +3,9 @@
  * @author NNTruong / nhuttruong6496@gmail.com
  */
 import { createSlice } from '@reduxjs/toolkit';
+import MockData from 'redux/MockData';
 const initialModel = {
-  data: [],
+  units: MockData.units,
   isFetching: false,
   isFetched: false,
 };
@@ -14,7 +15,7 @@ export const Slice = createSlice({
   initialState: initialModel,
   reducers: {
     reset() {
-      return { data: [], isFetching: false, isFetched: false };
+      return { units: [], isFetching: false, isFetched: false };
     },
   },
 });

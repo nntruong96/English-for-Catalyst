@@ -3,6 +3,7 @@
  * @author NNTruong / nhuttruong6496@gmail.com
  */
 import { createSlice } from '@reduxjs/toolkit';
+import MockData from 'redux/MockData';
 const userInfo = {
   firstName: '',
   lastName: '',
@@ -14,7 +15,8 @@ const initialModel = {
   userInfo: {
     ...userInfo,
   },
-  isLogged: false,
+  userUnits: MockData.userUnits,
+  isLogged: true,
   role: 1,
 };
 

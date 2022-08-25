@@ -7,26 +7,39 @@ import Register from 'pages/Auth/Register';
 import Login from 'pages/Auth/Login';
 import Forgot from 'pages/Auth/ForgotPassword';
 import SetPassword from 'pages/Auth/SetPassword';
+import UseDefault from 'pages/UnitDefault';
 const indexRoutes = [
   {
+    path: `*`,
+    component: <Main />,
+  },
+  {
     path: `/register`,
-    component: (props) => <Register {...props} />,
+    component: <Register />,
   },
   {
     path: `/login`,
-    component: (props) => <Login {...props} />,
+    component: <Login />,
   },
   {
     path: `/forgot`,
-    component: (props) => <Forgot {...props} />,
+    component: <Forgot />,
   },
   {
     path: `/setPassword`,
-    component: (props) => <SetPassword {...props} />,
+    component: <SetPassword />,
   },
   {
-    path: `/`,
-    component: (props) => <Main {...props} />,
+    path: `/unit/:unitNumber`,
+    component: <UseDefault />,
+  },
+  {
+    path: `/unit/:unitNumber/vocabulary`,
+    component: <UseDefault />,
+  },
+  {
+    path: `/unit/:unitNumber/reading`,
+    component: <UseDefault />,
   },
 ];
 

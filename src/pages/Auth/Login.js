@@ -23,8 +23,8 @@ export default function Login(props) {
   );
   const dispatch = useDispatch();
   const [data, setData] = useState({
-    email: '',
-    password: '',
+    email: 'admin',
+    password: '12345678',
   });
   const handleChange = (e) => {
     setData({
