@@ -71,7 +71,7 @@ const GroupButton = function ({ isLogged }) {
                 <MenuItem>Create a Copy</MenuItem>
                 <MenuItem>Mark as Draft</MenuItem>
                 <MenuItem>Delete</MenuItem>
-                <MenuItem>Login</MenuItem>
+                <MenuItem>Logout</MenuItem>
               </Flex>
             </MenuList>
           </Menu>

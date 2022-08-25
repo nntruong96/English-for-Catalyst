@@ -11,6 +11,7 @@ import {
   Container,
   useColorModeValue,
 } from '@chakra-ui/react';
+import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import { login } from 'redux/actions/user';
 import { useDispatch } from 'react-redux';
@@ -21,6 +22,7 @@ export default function Login(props) {
     '1px solid #e3e3e3',
     '1px solid gray.800'
   );
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const [data, setData] = useState({
     email: 'admin',
@@ -34,7 +36,11 @@ export default function Login(props) {
   };
   const submit = () => {
     console.log('submit', data);
-    dispatch(login(data));
+    dispatch(
+      login(data, () => {
+        return navigate('/');
+      })
+    );
   };
   return (
     <Container maxW="container.sm" centerContent pt="22px">

@@ -1,5 +1,4 @@
 import { userSliceActions } from 'redux/reducer/user';
-
 const api = () =>
   new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -11,6 +10,9 @@ export const login = (params, callback) => {
   return (dispatch) => {
     return api(params)
       .then((response) => {
+        if (callback) {
+          callback();
+        }
         return dispatch(
           userSliceActions.setData({
             isLogged: true,

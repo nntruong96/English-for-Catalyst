@@ -16,7 +16,7 @@ const initialModel = {
     ...userInfo,
   },
   userUnits: MockData.userUnits,
-  isLogged: true,
+  isLogged: false,
   role: 1,
 };
 
