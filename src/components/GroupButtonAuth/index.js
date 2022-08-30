@@ -77,11 +77,11 @@ const GroupButton = function ({ isLogged }) {
           </Menu>
         </Box>
       )}
-      <ColorModeSwitcher w="full" h="50px" minW="50px" />
+      {/* <ColorModeSwitcher w="full" h="50px" minW="50px" /> */}
     </>
   );
 };
-export default function Index(props) {
+export default function GroupButtonAuth(props) {
   const isLogged = useShallowEqualSelector((state) => state.user.isLogged);
   console.log('isLogged', isLogged);
   return (

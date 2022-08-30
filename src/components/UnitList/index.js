@@ -6,7 +6,7 @@ import React from 'react';
 import { Box, Flex, Text, Checkbox } from '@chakra-ui/react';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { Link } from 'react-router-dom';
-export default function Index(props) {
+export default function UnitList(props) {
   const { units, user } = useShallowEqualSelector((state) => ({
     units: state.documents.units,
     user: state.user,
@@ -18,7 +18,6 @@ export default function Index(props) {
         let checked = {};
         let count = 0;
         let actitivies = user?.userUnits[index]?.actitivies;
-        console.log('user?.userUnits[index]', user?.userUnits[index]);
         actitivies?.forEach((element) => {
           if (element.status === 2) {
             count++;

@@ -8,9 +8,8 @@ import WelcomePage from 'pages/Welcome';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import UnitList from 'components/UnitList';
 import { BsTrophy } from 'react-icons/bs';
-export default function Index(props) {
+export default function Main(props) {
   let isLogged = useShallowEqualSelector((state) => state.user.isLogged);
-  console.log('isLogged', isLogged);
   return (
     <Box>
       {isLogged ? (

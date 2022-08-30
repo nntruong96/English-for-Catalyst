@@ -7,17 +7,10 @@ import { Box, Text, Flex, Icon, Checkbox } from '@chakra-ui/react';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useParams, Navigate, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
-import { BsArrowLeftShort } from 'react-icons/bs';
-const TYPE = [
-  'vocabulary',
-  'reading',
-  'choice',
-  'listening',
-  'spelling',
-  'speaking',
-  'wringting',
-];
-export default function Index(props) {
+import TitlePage from 'components/TitlePage';
+import Constants from 'util/Constants';
+const TYPE = Constants.ACTIVITES_NAME;
+export default function UnitDefault(props) {
   let params = useParams();
   const { units, user } = useShallowEqualSelector((state) => ({
     units: state.documents.units,
@@ -26,33 +19,12 @@ export default function Index(props) {
   let { unitNumber } = params;
   let index = Number(unitNumber - 1);
   const unit = units[index];
-  const navigate = useNavigate();
-  console.log('unit', unit);
   if (!unit) {
     return <Navigate to="/" replace={true} />;
   }
   return (
     <Box>
-      <Flex alignItems="center">
-        <Box
-          bg="#133877"
-          w="32px"
-          h="32px"
-          borderRadius="50%"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          onClick={() => {
-            return navigate('/');
-          }}
-        >
-          <Icon as={BsArrowLeftShort} w="36px" h="36px" color="white" />
-        </Box>
-        <Text as="h1" fontWeight="bold" ml="12px" fontSize="1.5rem">
-          UNIT
-          {unitNumber}: {unit.title}
-        </Text>
-      </Flex>
+      <TitlePage title={`UNIT ${unitNumber}: ${unit.title}`} />
       <Text
         fontWeight="bold"
         mt="22px"
@@ -67,7 +39,7 @@ export default function Index(props) {
         {unit.actitivies.map((item, _index) => {
           let checked = {};
           let userActitivies = user?.userUnits[index]?.actitivies[_index];
-          if (userActitivies?.status === 2) {
+          if ([-1, 2].includes(userActitivies?.status)) {
             checked.defaultChecked = true;
           }
           return (
@@ -83,7 +55,16 @@ export default function Index(props) {
             >
               <Checkbox {...checked} onChange={() => {}} mr="8px" />
               <Box>
-                <Text>{item.title}</Text>
+                <Text>
+                  {item.title}
+                  {!item.required ? (
+                    <Text as="span" ml="4px" color="gray" fontWeight="normal">
+                      (optional to complete unit)
+                    </Text>
+                  ) : (
+                    ''
+                  )}
+                </Text>
                 <Text fontWeight="normal">
                   {user?.userUnits[index]?.actitivies[_index]?.description}
                 </Text>

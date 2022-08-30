@@ -8,6 +8,7 @@ import Login from 'pages/Auth/Login';
 import Forgot from 'pages/Auth/ForgotPassword';
 import SetPassword from 'pages/Auth/SetPassword';
 import UseDefault from 'pages/UnitDefault';
+import Activities from 'pages/Activities';
 const indexRoutes = [
   {
     path: `*`,
@@ -34,12 +35,8 @@ const indexRoutes = [
     component: <UseDefault />,
   },
   {
-    path: `/unit/:unitNumber/vocabulary`,
-    component: <UseDefault />,
-  },
-  {
-    path: `/unit/:unitNumber/reading`,
-    component: <UseDefault />,
+    path: `/unit/:unitNumber/:activityName`,
+    component: <Activities />,
   },
 ];
 
