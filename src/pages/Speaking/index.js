@@ -9,7 +9,7 @@ import TitleForm from 'components/TitlteForm';
 import ButtonPlay from 'components/ButtonPlayAudio';
 import { isValidUrl } from 'util/Constants';
 import { Link } from 'react-router-dom';
-export default function Speaking({ data, userActiviti, unitNumber }) {
+export default function Speaking({ data, userActiviti = {}, unitNumber }) {
   console.log('data', data);
   let { status = 0, audioUrl = '' } = userActiviti;
   const [link, setLink] = useState(audioUrl);

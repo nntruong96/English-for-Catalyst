@@ -5373,7 +5373,6 @@ const MockData = {
   ],
   userUnits: [
     {
-      title: 'Welcome to English for Catalyst',
       actitivies: [
         {
           description: 'Unit vocabulary, definitions, and example sentences.',

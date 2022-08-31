@@ -37,7 +37,6 @@ export default function Index(props) {
     units: state.documents.units,
     user: state.user,
   }));
-  //   const { isLogged, userUnits } = user;
   return (
     <TableContainer>
       <Table variant="simple">

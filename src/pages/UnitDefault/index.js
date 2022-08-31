@@ -24,7 +24,7 @@ export default function UnitDefault(props) {
   }
   return (
     <Box>
-      <TitlePage title={`UNIT ${unitNumber}: ${unit.title}`} />
+      <TitlePage title={`UNIT ${unitNumber}: ${unit.title}`} mt="22px" />
       <Text
         fontWeight="bold"
         mt="22px"

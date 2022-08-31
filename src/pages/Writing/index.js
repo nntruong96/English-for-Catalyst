@@ -9,7 +9,6 @@ import {
   Button,
   RadioGroup,
   Radio,
-  Input,
   Stack,
   Flex,
   Textarea,
@@ -19,7 +18,7 @@ import TitleForm from 'components/TitlteForm';
 import { Link } from 'react-router-dom';
 const MIN = 65,
   MAX = 400;
-export default function Speaking({ data, userActiviti, unitNumber }) {
+export default function Speaking({ data, userActiviti = {}, unitNumber }) {
   let { status = 0, data: { question, ans } = {} } = userActiviti;
   // const [isEdit, setIsEdit] = useState(false);
   const [inputAns, setAns] = useState('');

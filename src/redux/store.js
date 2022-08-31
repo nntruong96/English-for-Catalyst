@@ -1,13 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
-import user from './reducer/user';
-import documents from './reducer/documents';
-import settings from './reducer/settings';
+import reducer from 'redux/reducer';
 export default configureStore({
-  reducer: {
-    user,
-    documents,
-    settings,
-  },
-  middleware: getDefaultMiddleware =>
+  reducer,
+  middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),
 });

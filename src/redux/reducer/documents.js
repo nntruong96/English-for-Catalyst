@@ -2,23 +2,22 @@
  *
  * @author NNTruong / nhuttruong6496@gmail.com
  */
-import { createSlice } from '@reduxjs/toolkit';
 import MockData from 'redux/MockData';
-const initialModel = {
-  units: MockData.units,
-  isFetching: false,
-  isFetched: false,
-};
+import { documentsConstants, RESET_APP } from '../constants';
+import { createReducer } from '@reduxjs/toolkit';
+const { FETCH_DOCUMENTS } = documentsConstants;
 
-export const Slice = createSlice({
-  name: 'documents',
-  initialState: initialModel,
-  reducers: {
-    reset() {
-      return { units: [], isFetching: false, isFetched: false };
-    },
+function initialState() {
+  return {
+    units: MockData.units,
+    isFetching: false,
+    isFetched: false,
+  };
+}
+const authReducers = createReducer(initialState(), {
+  [RESET_APP]: (state, action) => {
+    state = initialState();
+    return state;
   },
 });
-
-export const documentsSliceActions = Slice.actions;
-export default Slice.reducer;
+export default authReducers;

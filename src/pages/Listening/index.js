@@ -19,8 +19,8 @@ const STATUS = {
   2: 'You scored {{score}}% correct on this activity.',
 };
 
-export default function Listening({ data, unitNumber, userActiviti }) {
-  let { countSubmit = 1, status = 0, data: { ans } = {} } = userActiviti;
+export default function Listening({ data, unitNumber, userActiviti = {} }) {
+  let { countSubmit = 1, status = 0, data: { ans = [] } = {} } = userActiviti;
   const [ansRender, setAns] = useState(ans); //ansRender just will be test
   const [isSubmit, setIsSubmit] = useState(false);
   const [ansStatus, setAnsStatus] = useState(true);

@@ -11,7 +11,6 @@ export default function UnitList(props) {
     units: state.documents.units,
     user: state.user,
   }));
-  //   const { isLogged, userUnits } = user;
   return (
     <Box p="22px" border="1px solid gray" borderRadius="8px" mt="22px">
       {units.map((item, index) => {

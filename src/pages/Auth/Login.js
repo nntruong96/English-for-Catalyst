@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
-import { login } from 'redux/actions/user';
+import { login } from 'redux/actions/authActions';
 import { useDispatch } from 'react-redux';
 import Input from 'components/Input';
 export default function Login(props) {
@@ -25,7 +25,7 @@ export default function Login(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [data, setData] = useState({
-    email: 'admin',
+    email: 'nhuttruong6496@gmail.com',
     password: '12345678',
   });
   const handleChange = (e) => {
@@ -37,8 +37,11 @@ export default function Login(props) {
   const submit = () => {
     console.log('submit', data);
     dispatch(
-      login(data, () => {
-        return navigate('/');
+      login(data, (err) => {
+        console.log(err);
+        if (!err) {
+          return navigate('/');
+        }
       })
     );
   };

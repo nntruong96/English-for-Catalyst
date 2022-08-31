@@ -9,25 +9,26 @@ import Forgot from 'pages/Auth/ForgotPassword';
 import SetPassword from 'pages/Auth/SetPassword';
 import UseDefault from 'pages/UnitDefault';
 import Activities from 'pages/Activities';
+import Profile from 'pages/Profile';
 const indexRoutes = [
   {
     path: `*`,
     component: <Main />,
   },
   {
-    path: `/register`,
+    path: `auth/register`,
     component: <Register />,
   },
   {
-    path: `/login`,
+    path: `auth/login`,
     component: <Login />,
   },
   {
-    path: `/forgot`,
+    path: `auth/forgot`,
     component: <Forgot />,
   },
   {
-    path: `/setPassword`,
+    path: `auth/reset`,
     component: <SetPassword />,
   },
   {
@@ -37,6 +38,10 @@ const indexRoutes = [
   {
     path: `/unit/:unitNumber/:activityName`,
     component: <Activities />,
+  },
+  {
+    path: `profile`,
+    component: <Profile />,
   },
 ];
 

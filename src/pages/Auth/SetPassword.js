@@ -11,9 +11,14 @@ import {
   Container,
   useColorModeValue,
 } from '@chakra-ui/react';
+import { resetPassword } from 'redux/actions/authActions';
 import Input from 'components/Input';
+import { useDispatch } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 export default function SetPassword(props) {
   const bgForm = useColorModeValue('#f5f5f5', 'gray.700');
+  const dispatch = useDispatch();
+  const [pasrams] = useSearchParams();
   const borderForm = useColorModeValue(
     '1px solid #e3e3e3',
     '1px solid gray.800'
@@ -21,6 +26,8 @@ export default function SetPassword(props) {
   const [data, setData] = useState({
     confirmPassword: '',
     password: '',
+    email: pasrams.get('email'),
+    token: pasrams.get('token'),
   });
   const handleChange = (e) => {
     setData({
@@ -29,7 +36,7 @@ export default function SetPassword(props) {
     });
   };
   const submit = () => {
-    console.log('submit', data);
+    dispatch(resetPassword(data));
   };
   return (
     <Container maxW="container.sm" centerContent pt="22px">
@@ -43,7 +50,7 @@ export default function SetPassword(props) {
               Your password
             </Text>
             <Input
-              value={data.email}
+              value={data.password}
               name="password"
               type="password"
               placeholder="Enter your password"
@@ -55,7 +62,7 @@ export default function SetPassword(props) {
               Confirm password
             </Text>
             <Input
-              value={data.password}
+              value={data.confirmPassword}
               name="confirmPassword"
               placeholder="Enter your passwork"
               type="password"

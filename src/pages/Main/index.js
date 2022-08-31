@@ -9,7 +9,7 @@ import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import UnitList from 'components/UnitList';
 import { BsTrophy } from 'react-icons/bs';
 export default function Main(props) {
-  let isLogged = useShallowEqualSelector((state) => state.user.isLogged);
+  let isLogged = useShallowEqualSelector((state) => state.auth.loggedIn);
   return (
     <Box>
       {isLogged ? (

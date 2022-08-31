@@ -41,7 +41,7 @@ const GroupButton = function ({ isLogged }) {
         </Box>
       )}
       {!isLogged ? (
-        <Box as={Link} to="/login" w="full">
+        <Box as={Link} to="/auth/login" w="full">
           <Button colorScheme="blue" size="lg" w="full">
             <Icon as={BsArrowBarRight} mr="12px" />
             Login
@@ -67,7 +67,9 @@ const GroupButton = function ({ isLogged }) {
                 gap="12px"
                 p="0px 12px"
               >
-                <MenuItem>Profile</MenuItem>
+                <MenuItem as={Link} to="profile">
+                  Profile
+                </MenuItem>
                 <MenuItem>Create a Copy</MenuItem>
                 <MenuItem>Mark as Draft</MenuItem>
                 <MenuItem>Delete</MenuItem>
@@ -81,9 +83,8 @@ const GroupButton = function ({ isLogged }) {
     </>
   );
 };
-export default function GroupButtonAuth(props) {
-  const isLogged = useShallowEqualSelector((state) => state.user.isLogged);
-  console.log('isLogged', isLogged);
+export default function GroupButtonAuth() {
+  const isLogged = useShallowEqualSelector((state) => state.auth.loggedIn);
   return (
     <Flex>
       <Flex
