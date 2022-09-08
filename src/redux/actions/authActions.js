@@ -43,17 +43,26 @@ export const login = ({ email, password, isRemember }, callback = () => {}) => {
       .login(email, password, isRemember)
       .then((res) => {
         if (res && res.body && res.body.error_code) {
-          callback(res.body);
-          if (res.body.error_code === '10002' || res.body.error_code === 10002)
+          if (
+            res.body.error_code === '10002' ||
+            res.body.error_code === 10002
+          ) {
+            callback(res.body);
             return dispatch({ type: NOT_VERIFIED_YET });
-
-          return errorRes(dispatch, failure, res, {
-            show: true,
-            type: 'warning',
-          });
+          }
+          return errorRes(
+            dispatch,
+            failure,
+            res.body,
+            {
+              show: true,
+              type: 'warning',
+            },
+            callback
+          );
         }
-        successRes(dispatch, success);
-        callback();
+
+        successRes(dispatch, success, false, false, callback);
       })
       .catch((err) => {
         callback(err);
@@ -68,7 +77,10 @@ export const login = ({ email, password, isRemember }, callback = () => {}) => {
  * @param {Object} email - email.
  * @return {Object} - an action post request.
  */
-export const register = (email, password, firstName, lastName) => {
+export const register = (
+  { email, password, firstName, lastName, role },
+  callback = () => {}
+) => {
   let request = () => ({ type: REGISTER_REQUEST });
   let success = () => ({ type: REGISTER_SUCCESS });
   let failure = () => ({ type: REGISTER_FAILURE });
@@ -76,26 +88,38 @@ export const register = (email, password, firstName, lastName) => {
   return (dispatch) => {
     dispatch(request());
     return loginClient
-      .register(email, password, firstName, lastName)
+      .register({ email, password, firstName, lastName, role })
       .then((res) => {
         if (res && res.body && res.body.error_code) {
-          return errorRes(dispatch, failure, res, {
-            show: true,
-            type: 'warning',
-          });
+          return errorRes(
+            dispatch,
+            failure,
+            res.body,
+            {
+              show: true,
+              type: 'warning',
+            },
+            callback
+          );
         }
-        successRes(dispatch, success);
+        successRes(dispatch, success, false, false, callback);
       })
       .catch((err) => {
-        errorRes(dispatch, failure, err, {
-          show: true,
-          title: err.response ? err.response.text : err.message,
-        });
+        errorRes(
+          dispatch,
+          failure,
+          err,
+          {
+            show: true,
+            title: err.response ? err.response.text : err.message,
+          },
+          callback
+        );
       });
   };
 };
 
-export const resendEmail = (email, history) => {
+export const resendEmail = (email, callback = () => {}) => {
   let request = () => ({ type: RESEND_EMAIL_REQUEST });
   let success = () => ({ type: RESEND_EMAIL_SUCCESS });
   let failure = () => ({ type: RESEND_EMAIL_FAILURE });
@@ -105,23 +129,41 @@ export const resendEmail = (email, history) => {
       .resendEmail(email)
       .then((res) => {
         if (res && res.body && res.body.error_code) {
-          return errorRes(dispatch, failure, res.body, {
-            show: true,
-            type: 'warning',
-          });
+          return errorRes(
+            dispatch,
+            failure,
+            res.body,
+            {
+              show: true,
+              type: 'warning',
+            },
+            callback
+          );
         }
-        successRes(dispatch, success, null, {
-          show: true,
-          title:
-            "Got it! We've sent a verification email to " +
-            email +
-            '. Use that to confirm your registration.',
-        });
+        successRes(
+          dispatch,
+          success,
+          null,
+          {
+            show: true,
+            title:
+              "Got it! We've sent a verification email to " +
+              email +
+              '. Use that to confirm your registration.',
+          },
+          callback
+        );
       })
       .catch((err) => {
-        errorRes(dispatch, failure, err, {
-          show: true,
-        });
+        errorRes(
+          dispatch,
+          failure,
+          err,
+          {
+            show: true,
+          },
+          callback
+        );
       });
   };
 };
@@ -131,7 +173,7 @@ export const resendEmail = (email, history) => {
  * @param {Object} email - the email of user.
  * @return {Object} -  an action post request.
  */
-export const forgotPassword = (email, history) => {
+export const forgotPassword = (email, callback = () => {}) => {
   let request = () => ({ type: FORGOT_PASSWORD_REQUEST });
   let success = () => ({ type: FORGOT_PASSWORD_SUCCESS });
   let failure = () => ({ type: FORGOT_PASSWORD_FAILURE });
@@ -141,21 +183,39 @@ export const forgotPassword = (email, history) => {
       .forgotPassword(email)
       .then((res) => {
         if (res && res.body && res.body.error_code) {
-          return errorRes(dispatch, failure, res.body, {
-            show: true,
-            type: 'warning',
-          });
+          return errorRes(
+            dispatch,
+            failure,
+            res.body,
+            {
+              show: true,
+              type: 'warning',
+            },
+            callback
+          );
         }
-        successRes(dispatch, success, null, {
-          show: true,
-          title:
-            'Success! Instructions to change your password have been sent to this email.',
-        });
+        successRes(
+          dispatch,
+          success,
+          null,
+          {
+            show: true,
+            title:
+              'Success! Instructions to change your password have been sent to this email.',
+          },
+          callback
+        );
       })
       .catch((err) => {
-        errorRes(dispatch, failure, err, {
-          show: true,
-        });
+        errorRes(
+          dispatch,
+          failure,
+          err,
+          {
+            show: true,
+          },
+          callback
+        );
       });
   };
 };
@@ -178,7 +238,7 @@ export const resetPassword = ({ token, email, password }, callback) => {
       .resetPassword(token, email, password)
       .then((res) => {
         if (res && res.body && res.body.error_code) {
-          let errorMessage = '';
+          let errorMessage = res.body.error_message;
           if (res.body.error_code === '11004' || res.body.error_code === 11004)
             errorMessage =
               'This combo of email and password is out of date...try again?';
@@ -191,9 +251,9 @@ export const resetPassword = ({ token, email, password }, callback) => {
             type: 'warning',
             message: errorMessage,
           });
-
           if (callback) {
-            callback(errorMessage);
+            console.log('ther');
+            callback({ error_message: errorMessage });
           }
           return;
         }
@@ -251,7 +311,8 @@ export const verifyToken = (token, email, history) => {
 export const logout = () => {
   return (dispatch) => {
     eraseCookie('access_token');
-    window.location.href = process.env.REACT_APP_LANDING_HOME;
+    dispatch(resetApp());
+    window.location.href = '/';
   };
 };
 

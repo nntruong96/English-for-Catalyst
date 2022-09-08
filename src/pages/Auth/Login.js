@@ -26,8 +26,9 @@ export default function Login(props) {
   const dispatch = useDispatch();
   const [data, setData] = useState({
     email: 'nhuttruong6496@gmail.com',
-    password: '12345678',
+    password: 'truong0604',
   });
+  const [error, setError] = useState('');
   const handleChange = (e) => {
     setData({
       ...data,
@@ -42,8 +43,12 @@ export default function Login(props) {
         if (!err) {
           return navigate('/');
         }
+        setError(err.error_message);
       })
     );
+  };
+  const isDisabled = () => {
+    return !data.email || !data.password;
   };
   return (
     <Container maxW="container.sm" centerContent pt="22px">
@@ -52,9 +57,19 @@ export default function Login(props) {
           Welcome to English for Catalyst
         </Text>
         <Text mt="22px" mb="22px" textAlign="center">
-          New user? Please <Link to={'/register'}>Create an Account.</Link>
+          New user? Please <Link to={'/auth/register'}>Create an Account.</Link>
         </Text>
-        <Box bg={bgForm} border={borderForm} p="22px" borderRadius="12px">
+        <Box
+          bg={bgForm}
+          border={borderForm}
+          p="22px"
+          borderRadius="12px"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !isDisabled()) {
+              submit();
+            }
+          }}
+        >
           <Flex direction="column">
             <Text as="label" mb="12px">
               Your Email
@@ -78,6 +93,9 @@ export default function Login(props) {
               onChange={handleChange}
             />
           </Flex>
+          <Text color="red" fontSize="12px" mt="12px">
+            {error}
+          </Text>
           <Flex alignItems="center" mt="22px">
             <Button
               colorScheme="blue"
@@ -85,10 +103,13 @@ export default function Login(props) {
               flex={1}
               size="lg"
               onClick={submit}
+              isDisabled={isDisabled()}
             >
               Login
             </Button>
-            <Link to="/forgot">Forgot password?</Link>
+            <Text as={Link} color="blue" to="/auth/forgot">
+              Forgot password?
+            </Text>
           </Flex>
         </Box>
       </Flex>

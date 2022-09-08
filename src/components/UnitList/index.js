@@ -18,7 +18,7 @@ export default function UnitList(props) {
         let count = 0;
         let actitivies = user?.userUnits[index]?.actitivies;
         actitivies?.forEach((element) => {
-          if (element.status === 2) {
+          if ([-1, 2].includes(element.status)) {
             count++;
           }
         });

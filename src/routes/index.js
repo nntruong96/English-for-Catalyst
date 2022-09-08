@@ -10,6 +10,8 @@ import SetPassword from 'pages/Auth/SetPassword';
 import UseDefault from 'pages/UnitDefault';
 import Activities from 'pages/Activities';
 import Profile from 'pages/Profile';
+import Grade from 'pages/Grade';
+import ClassRoom from 'pages/ClassRoom';
 const indexRoutes = [
   {
     path: `*`,
@@ -42,6 +44,17 @@ const indexRoutes = [
   {
     path: `profile`,
     component: <Profile />,
+    requireLogin: true,
+  },
+  {
+    path: 'profile/grade',
+    component: <Grade />,
+    requireLogin: true,
+  },
+  {
+    path: 'myclass',
+    component: <ClassRoom />,
+    requireLogin: true,
   },
 ];
 

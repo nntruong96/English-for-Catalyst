@@ -25,7 +25,7 @@ const STATUS = {
   //     },
   //   },
   2: {
-    text: 'Congratulations... you passed the Reading Comprehension quiz.',
+    text: 'Congratulations... you passed the quiz.',
     icon: BsCheckCircle,
     styles: {
       border: '0px solid pink',

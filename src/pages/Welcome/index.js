@@ -2,7 +2,7 @@
  *
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button, Box, Flex, Text, Image } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 import UnitList from 'components/UnitTable';
@@ -40,12 +40,12 @@ export default function Index(props) {
       >
         <Image w="400px" alt="top" src={imageTop} />
         <Flex direction="column">
-          <Link to="/register">
+          <Link to="/auth/register">
             <Button mt="22px" w="200px" colorScheme="orange">
               Sign up Free
             </Button>
           </Link>
-          <Link to="/login">
+          <Link to="/auth/login">
             <Button mt="12px" w="200px">
               or login
             </Button>

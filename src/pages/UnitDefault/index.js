@@ -3,18 +3,19 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React from 'react';
-import { Box, Text, Flex, Icon, Checkbox } from '@chakra-ui/react';
+import { Box, Text, Flex, Checkbox } from '@chakra-ui/react';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
-import { useParams, Navigate, useNavigate } from 'react-router';
+import { useParams, Navigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import TitlePage from 'components/TitlePage';
 import Constants from 'util/Constants';
 const TYPE = Constants.ACTIVITES_NAME;
 export default function UnitDefault(props) {
   let params = useParams();
-  const { units, user } = useShallowEqualSelector((state) => ({
+  const { units, user, loggedIn } = useShallowEqualSelector((state) => ({
     units: state.documents.units,
     user: state.user,
+    loggedIn: state.auth.loggedIn,
   }));
   let { unitNumber } = params;
   let index = Number(unitNumber - 1);
@@ -53,7 +54,11 @@ export default function UnitDefault(props) {
               fontWeight="bold"
               mt="12px"
             >
-              <Checkbox {...checked} onChange={() => {}} mr="8px" />
+              {loggedIn ? (
+                <Checkbox {...checked} onChange={() => {}} mr="8px" />
+              ) : (
+                ''
+              )}
               <Box>
                 <Text>
                   {item.title}
@@ -66,7 +71,9 @@ export default function UnitDefault(props) {
                   )}
                 </Text>
                 <Text fontWeight="normal">
-                  {user?.userUnits[index]?.actitivies[_index]?.description}
+                  {loggedIn
+                    ? user?.userUnits[index]?.actitivies[_index]?.description
+                    : item.description}
                 </Text>
               </Box>
             </Flex>

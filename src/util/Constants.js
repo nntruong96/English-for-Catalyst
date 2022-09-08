@@ -30,6 +30,94 @@ export const isValidUrl = (urlString) => {
   ); // validate fragment locator
   return !!urlPattern.test(urlString);
 };
+export const isEmptyAns = (ans) => {
+  return ans === undefined || ans === null || ans === '';
+};
+export const checkScorePass = (countAnsCorrect, numberQuestion) => {
+  if (countAnsCorrect / numberQuestion > 0.85) {
+    return true;
+  }
+  return false;
+};
+export const getName = (user = { firstName: '', lastName: '' }) => {
+  return user.firstName + ' ' + user.lastName;
+};
+const COMPUTER_GRADE = [4, 5];
+const STEACHER_GRADE = [6, 7];
+export const calGrade = ({ userUnits, rootUnits }) => {
+  let teacher = [],
+    computerGrade = [],
+    _units = [],
+    unitComplete = 0,
+    res = {};
+  userUnits?.forEach((unit, index) => {
+    let _unit = { actitivies: [], title: rootUnits[index].title },
+      count = 0,
+      completeTime = 0,
+      unitGrade = [];
+    unit?.actitivies?.forEach((activi) => {
+      if ([-1, 2].includes(activi.status)) {
+        _unit.actitivies.push({
+          ...activi,
+        });
+        completeTime = Math.max(completeTime, activi.updateAt || 1);
+        count++;
+        if (STEACHER_GRADE.includes(activi.type)) {
+          if (typeof activi.grade === 'number') {
+            teacher.push(activi.grade || 0);
+            unitGrade.push(activi.grade || 0);
+          } else {
+            //writing have to grade for content and for grama
+            if (Array.isArray(activi.grade)) {
+              activi.grade.forEach((item) => {
+                teacher.push(item);
+                unitGrade.push(item);
+              });
+            }
+          }
+        }
+        if (COMPUTER_GRADE.includes(activi.type)) {
+          if (typeof activi.grade === 'number') {
+            computerGrade.push(activi.grade || 0);
+            unitGrade.push(activi.grade || 0);
+          }
+        }
+      }
+
+      if (STEACHER_GRADE.includes(activi.type) && activi.status === 1) {
+        _unit.actitivies.push({
+          ...activi,
+        });
+      }
+    });
+
+    if (unit?.actitivies?.length === count) {
+      unitComplete++;
+      _unit.complete = true;
+      _unit.updateAt = completeTime;
+      _unit.grade = unitGrade.length
+        ? Number.parseInt(unitGrade.reduce((a, b) => a + b) / unitGrade.length)
+        : 0;
+    }
+    _units.push(_unit);
+  });
+  res.units = _units;
+  res.numberUnitComplete = unitComplete;
+  if (!teacher.length) {
+    res.teacherGrade = 0;
+  } else {
+    let _sum = teacher.reduce((a, b) => a + b);
+    res.teacherGrade = Number.parseInt(_sum / teacher.length);
+  }
+
+  if (!computerGrade.length) {
+    res.computerGrade = 0;
+  } else {
+    let _sum = computerGrade.reduce((a, b) => a + b);
+    res.computerGrade = Number.parseInt(_sum / computerGrade.length);
+  }
+  return res;
+};
 const Constants = {
   ACTIVITES_NAME: [
     'vocabulary',
@@ -41,8 +129,8 @@ const Constants = {
     'wringting',
   ],
   ACTIVITES_NAME_TO_TITLE: {
-    vocabulary: 'VOCABULARY',
-    reading: 'READING ACTIVITY',
+    vocabulary: 'Vocabulary',
+    reading: 'Reading Aactivity',
     choice: 'Multiple Choice',
     listening: 'Listening Comprehension',
     spelling: 'Spelling and Recognition',

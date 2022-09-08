@@ -21,13 +21,17 @@ import {
   BsPersonFill,
 } from 'react-icons/bs';
 import { ColorModeSwitcher } from 'components/ColorModeSwitcher';
+import { logout } from 'redux/actions/authActions';
 import { Link } from 'react-router-dom';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
+import { useDispatch } from 'react-redux';
 const GroupButton = function ({ isLogged }) {
+  const dispatch = useDispatch();
+
   return (
     <>
       {!isLogged ? (
-        <Box as={Link} to="/register" w="full">
+        <Box as={Link} to="/auth/register" w="full">
           <Button mr="12px" size="lg" w="full">
             <Icon as={BsFillPersonPlusFill} mr="12px" />
             SIGN UP
@@ -67,13 +71,16 @@ const GroupButton = function ({ isLogged }) {
                 gap="12px"
                 p="0px 12px"
               >
-                <MenuItem as={Link} to="profile">
+                <MenuItem as={Link} to="/profile">
                   Profile
                 </MenuItem>
-                <MenuItem>Create a Copy</MenuItem>
+                <MenuItem as={Link} to="/profile/grade">
+                  My Grade
+                </MenuItem>
+                {/* <MenuItem>Create a Copy</MenuItem>
                 <MenuItem>Mark as Draft</MenuItem>
-                <MenuItem>Delete</MenuItem>
-                <MenuItem>Logout</MenuItem>
+                <MenuItem>Delete</MenuItem> */}
+                <MenuItem onClick={() => dispatch(logout())}>Logout</MenuItem>
               </Flex>
             </MenuList>
           </Menu>

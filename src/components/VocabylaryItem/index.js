@@ -3,17 +3,20 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React from 'react';
-import { Box, Text, Icon, Flex } from '@chakra-ui/react';
-import { BsFillPlayFill } from 'react-icons/bs';
+import { Box, Text, Flex } from '@chakra-ui/react';
 import ButtonPlayAudio from 'components/ButtonPlayAudio';
-
-export default function VocabularyItem({ vocabulary, ...orther }) {
+import { useNavigate } from 'react-router';
+export default function VocabularyItem({ loggedIn, vocabulary, ...orther }) {
   let {
     vocab: { text, orText, audioUrl },
     example,
     description,
   } = vocabulary;
+  const navigate = useNavigate();
   const playAudio = (_audioUrl) => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     let audio = new Audio(_audioUrl);
     audio.play();
   };

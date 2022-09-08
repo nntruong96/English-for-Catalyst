@@ -9,21 +9,60 @@ import TitleForm from 'components/TitlteForm';
 import ButtonPlay from 'components/ButtonPlayAudio';
 import { isValidUrl } from 'util/Constants';
 import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { updateUser } from 'redux/actions/userActions';
+import ContainerForm from 'components/ContainerForm';
+import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
+import { useNavigate } from 'react-router';
 export default function Speaking({ data, userActiviti = {}, unitNumber }) {
-  console.log('data', data);
   let { status = 0, audioUrl = '' } = userActiviti;
   const [link, setLink] = useState(audioUrl);
   const [isEdit, setIsEdit] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const dispatch = useDispatch();
+  const loggedIn = useShallowEqualSelector((state) => state.auth.loggedIn);
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
   const playAudio = (_audioUrl) => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     let audio = new Audio(_audioUrl);
     audio.play();
   };
   const onInputChange = (e) => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     setLink(e.target.value);
   };
   const submit = () => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     setIsEdit(false);
-    console.log('submit');
+    setUpdating(true);
+    dispatch(
+      updateUser(
+        {
+          data: {
+            ...userActiviti,
+            status: 1,
+            description: `Your teacher has not graded your activity yet.`,
+            audioUrl: link,
+            updateAt: new Date().getTime(),
+          },
+          unitNumber: Number(unitNumber) - 1,
+          type: userActiviti.type,
+        },
+        (err, res) => {
+          setUpdating(false);
+          if (err) {
+            setError(err.error_message);
+          }
+        }
+      )
+    );
   };
   return (
     <Box mt="22px">
@@ -32,6 +71,20 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
           Please listen to and practice the 5 sentences below. Then follow the
           instructions below.
         </TitleWelComeActivity>
+      ) : (
+        ''
+      )}
+      {[-1, 2].includes(status) ? (
+        <ContainerForm title="Your Grade">
+          <Flex>
+            <Text fontWeight="bold">Grade: </Text>
+            <Text ml="4px">{userActiviti.grade}</Text>
+          </Flex>
+          <Flex mt="12px">
+            <Text fontWeight="bold">Teacher Comments:</Text>
+            <Text ml="4px">{userActiviti.comment || 'No comment'}</Text>
+          </Flex>
+        </ContainerForm>
       ) : (
         ''
       )}
@@ -46,6 +99,9 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
           );
         })}
       </Box>
+      <Text mb="12px" color="red">
+        {error}
+      </Text>
       {[0].includes(status) || isEdit ? (
         <Flex gap="12px" alignItems="center" flexWrap="wrap">
           <Text fontWeight="bold" whiteSpace="nowrap">
@@ -55,7 +111,9 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
           <Button
             colorScheme="blue"
             onClick={submit}
-            isDisabled={!isValidUrl(link)}
+            isLoading={updating}
+            loadingText={'SUBMIT'}
+            isDisabled={!isValidUrl(link) || updating}
           >
             SUBMIT
           </Button>
@@ -79,9 +137,9 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
             <Button as={Link} to={`/unit/${unitNumber}`} colorScheme="blue">
               GO TO UNIT MENU
             </Button>
-            <Button onClick={() => setIsEdit(true)} colorScheme="red">
+            {/* <Button onClick={() => setIsEdit(true)} colorScheme="red">
               EDIT LINK
-            </Button>
+            </Button> */}
           </Flex>
         </>
       )}

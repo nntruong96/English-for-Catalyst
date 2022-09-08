@@ -16,32 +16,47 @@ import {
 import TitleWelComeActivity from 'components/TitleWelcomeActivity';
 import TitleForm from 'components/TitlteForm';
 import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { updateUser } from 'redux/actions/userActions';
+import ContainerForm from 'components/ContainerForm';
+import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
+import { useNavigate } from 'react-router';
 const MIN = 65,
   MAX = 400;
 export default function Speaking({ data, userActiviti = {}, unitNumber }) {
   let { status = 0, data: { question, ans } = {} } = userActiviti;
-  // const [isEdit, setIsEdit] = useState(false);
   const [inputAns, setAns] = useState('');
   const [error, setError] = useState('');
-  console.log('question', question);
+  const [updating, setUpdating] = useState(false);
+  const dispatch = useDispatch();
+  const loggedIn = useShallowEqualSelector((state) => state.auth.loggedIn);
+  const navigate = useNavigate();
   const [questionChoice, setChoice] = useState(() => {
-    return [-1, 2].includes(status)
+    return [-1, 2, 1].includes(status)
       ? data?.data.findIndex((item) => item.question === question)
       : '';
   });
-  console.log('questionChoice', questionChoice);
   const [choiced, setChoiced] = useState(
-    [-1, 2].includes(status) ? true : false
+    [-1, 2, 1].includes(status) ? true : false
   );
 
   const onChoiceQuestion = () => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     setChoiced(true);
   };
   const onAnsChange = (e) => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     setError('');
     setAns(e.target.value);
   };
   const onSubmit = () => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     if (inputAns && inputAns.trim().length < MIN) {
       return setError(
         `Your answer is too short. It has to be more than ${MIN} words.`
@@ -52,7 +67,31 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
         `Your answer is too long. It has to be less than ${MAX} words.`
       );
     }
-    console.log('submit');
+    setUpdating(true);
+    dispatch(
+      updateUser(
+        {
+          data: {
+            ...userActiviti,
+            status: 1,
+            description: `Your teacher has not graded your activity yet.`,
+            data: {
+              question: data?.data[questionChoice]?.question,
+              ans: inputAns,
+            },
+            updateAt: new Date().getTime(),
+          },
+          unitNumber: Number(unitNumber) - 1,
+          type: userActiviti.type,
+        },
+        (err, res) => {
+          setUpdating(false);
+          if (err) {
+            setError(err.error_message);
+          }
+        }
+      )
+    );
   };
   return (
     <Box mt="22px" pb="22px">
@@ -63,6 +102,34 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
             : `Please choose a question to answer. You may want to review the reading
         activity first.`}
         </TitleWelComeActivity>
+      ) : (
+        ''
+      )}
+      {[-1, 2].includes(status) ? (
+        <ContainerForm title="Your Grade">
+          <Flex>
+            <Text fontWeight="bold">Content grade: </Text>
+            <Text ml="4px">{userActiviti.grade[0]}%</Text>
+          </Flex>
+          <Flex>
+            <Text fontWeight="bold">Grammar grade: </Text>
+            <Text ml="4px">{userActiviti.grade[1]}%</Text>
+          </Flex>
+          <Flex>
+            <Text fontWeight="bold">Total grade: </Text>
+            <Text ml="4px">
+              {Number.parseInt(
+                userActiviti.grade.reduce((a, b) => a + b) /
+                  userActiviti.grade.length
+              )}
+              %
+            </Text>
+          </Flex>
+          <Flex mt="12px">
+            <Text fontWeight="bold">Teachers Comments:</Text>
+            <Text ml="4px">{userActiviti.comment || 'No comment'}</Text>
+          </Flex>
+        </ContainerForm>
       ) : (
         ''
       )}
@@ -94,6 +161,7 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
           )}
         </Box>
       </Box>
+
       {[0].includes(status) ? (
         <>
           {data?.data[questionChoice] ? (
@@ -136,7 +204,9 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
                 <Button
                   colorScheme="blue"
                   onClick={onSubmit}
-                  isDisabled={!Boolean(inputAns?.trim())}
+                  isLoading={updating}
+                  loadingText={'SUBMIT YOUR ANS'}
+                  isDisabled={!Boolean(inputAns?.trim()) || updating}
                 >
                   SUBMIT YOUR ANS
                 </Button>

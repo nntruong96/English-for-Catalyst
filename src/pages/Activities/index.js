@@ -3,7 +3,7 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React from 'react';
-import { Box, Text } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useParams, useNavigate, Navigate } from 'react-router';
 import TitlePage from 'components/TitlePage';
@@ -21,8 +21,7 @@ export default function Index(props) {
     units: state.documents.units,
     user: state.user,
   }));
-  const { isLogged, userUnits } = user;
-  console.log('params', params);
+  const { userUnits } = user;
   const navigate = useNavigate();
   const onBack = () => navigate('/unit/' + unitNumber);
   let { unitNumber, activityName } = params;
@@ -32,7 +31,6 @@ export default function Index(props) {
     return <Navigate to="/" replace={true} />;
   }
   const renderActivity = () => {
-    console.log('renderActivity');
     let vocabularyData;
     let userUnit = userUnits[index],
       ans,
@@ -40,38 +38,33 @@ export default function Index(props) {
     switch (activityName) {
       case Constants.ACTIVITES_NAME[0]:
         vocabularyData = unit?.actitivies[0];
-        status = userUnit?.actitivies[0]?.status;
         return (
           <Vocabulary
             data={vocabularyData}
-            status={status}
             unitNumber={unitNumber}
+            activiti={userUnit?.actitivies[0]}
           />
         );
       case Constants.ACTIVITES_NAME[1]:
         vocabularyData = unit?.actitivies[0];
         const readingData = unit?.actitivies[1];
         ans = userUnit?.actitivies[1]?.data?.ans;
-        status = userUnit?.actitivies[1]?.status;
         return (
           <Reading
             data={readingData}
             ans={ans}
-            status={status}
             vocabularyData={vocabularyData}
             unitNumber={unitNumber}
+            activiti={userUnit?.actitivies[1]}
           />
         );
       case Constants.ACTIVITES_NAME[2]:
         const mutipleData = unit?.actitivies[2];
-        ans = userUnit?.actitivies[2]?.data?.ans;
-        status = userUnit?.actitivies[2]?.status;
         return (
           <MultipleChoice
             data={mutipleData}
-            status={status}
-            ans={ans}
             unitNumber={unitNumber}
+            activiti={userUnit?.actitivies[2]}
           />
         );
       case Constants.ACTIVITES_NAME[3]:

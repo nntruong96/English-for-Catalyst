@@ -37,17 +37,31 @@ export default function Index({
             >
               <Stack direction="column">
                 {item.listAns.map((_item, _index) => (
-                  <Radio key={_index} value={_index}>
-                    {_item}
+                  <Flex alignItems="center" key={_index}>
+                    <Radio key={_index} value={_index}>
+                      {_item}
+                    </Radio>
                     {(status === -1 || status === 2) &&
                     _index === ans[index] ? (
                       Number(item.ans) === Number(ans[index]) ? (
-                        <Icon as={BsCheckCircle} color="green" ml="12px" />
+                        <Icon
+                          as={BsCheckCircle}
+                          color="green"
+                          ml="12px"
+                          h="24px"
+                          w="24px"
+                        />
                       ) : (
-                        <Icon as={BsFillXCircleFill} ml="12px" color="red" />
+                        <Icon
+                          as={BsFillXCircleFill}
+                          ml="12px"
+                          color="red"
+                          h="24px"
+                          w="24px"
+                        />
                       )
                     ) : null}
-                  </Radio>
+                  </Flex>
                 ))}
               </Stack>
             </RadioGroup>

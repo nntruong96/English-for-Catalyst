@@ -2,17 +2,73 @@
  *
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
-import React from 'react';
-import { Box, Button, Flex } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { Box, Button, Text, Flex } from '@chakra-ui/react';
 import VocabularyItem from 'components/VocabylaryItem';
 import TitleWelComeActivity from 'components/TitleWelcomeActivity';
 import { Link } from 'react-router-dom';
-export default function Vocabulary({ data, status = 0, unitNumber }) {
+import { updateUser } from 'redux/actions/userActions';
+import { useDispatch } from 'react-redux';
+import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
+import { useNavigate } from 'react-router';
+export default function Vocabulary({ data, unitNumber, activiti = {} }) {
+  const dispatch = useDispatch();
+  const loggedIn = useShallowEqualSelector((state) => state.auth.loggedIn);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState('');
+  const { status = 0 } = activiti;
+  const navigate = useNavigate();
   const onSubmit = () => {
-    console.log('submit');
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
+    setUpdating(true);
+    dispatch(
+      updateUser(
+        {
+          data: {
+            ...activiti,
+            status: 2,
+            description: 'You have finished this activity.',
+            updateAt: new Date().getTime(),
+          },
+          unitNumber: Number(unitNumber) - 1,
+          type: activiti.type,
+        },
+        (err, res) => {
+          setUpdating(false);
+          if (err) {
+            setError(err.error_message);
+          }
+        }
+      )
+    );
   };
   const onRedu = () => {
-    console.log('onRedu');
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
+    dispatch(
+      updateUser(
+        {
+          data: {
+            ...activiti,
+            status: 0,
+            description: 'Unit vocabulary, definitions, and example sentences.',
+            updateAt: new Date().getTime(),
+          },
+          unitNumber: Number(unitNumber) - 1,
+          type: activiti.type,
+        },
+        (err, res) => {
+          setUpdating(false);
+          if (err) {
+            setError(err.error_message);
+          }
+          console.log(err, res);
+        }
+      )
+    );
   };
   return (
     <Box mt="22px" pb="22px">
@@ -29,17 +85,27 @@ export default function Vocabulary({ data, status = 0, unitNumber }) {
               border="1px solid #e3e3e3"
               vocabulary={item}
               key={index}
+              loggedIn={loggedIn}
             />
           );
         })}
       </Flex>
+      <Text mt="12px" color="red">
+        {error}
+      </Text>
       <Flex mt="22px" gap="22">
         {status === 0 ? (
           <>
-            <Button onClick={onSubmit} colorScheme="blue">
+            <Button
+              onClick={onSubmit}
+              isDisabled={updating}
+              isLoading={updating}
+              loadingText="   Mark Activity Complete"
+              colorScheme="blue"
+            >
               Mark Activity Complete
             </Button>
-            <Button as={Link} to={`/unit/${unitNumber}`}>
+            <Button as={Link} to={`/unit/${unitNumber}`} isDisabled={updating}>
               CANCEL
             </Button>
           </>

@@ -11,21 +11,34 @@ import TitleForm from 'components/TitlteForm';
 import Input from 'components/Input';
 import { BsCheckCircle, BsFillXCircleFill } from 'react-icons/bs';
 import { calculatePercentageScoreListening } from 'util/Constants';
+import { useDispatch } from 'react-redux';
+import { updateUser } from 'redux/actions/userActions';
+import { checkScorePass, isEmptyAns } from 'util/Constants';
+import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
+import { useNavigate } from 'react-router';
 const STATUS = {
   '-1': 'You scored {{score}}% correct on this activity.',
   0: `Please spell the pronounced <strong>vocabulary term</strong> or
   <strong>abbreviation</strong> correctly. Spaces, hyphens, and case are
   optional.`,
   2: 'You scored {{score}}% correct on this activity.',
+  1: `Please spell the pronounced <strong>vocabulary term</strong> or
+  <strong>abbreviation</strong> correctly. Spaces, hyphens, and case are
+  optional.`,
 };
 
 export default function Listening({ data, unitNumber, userActiviti = {} }) {
   let { countSubmit = 1, status = 0, data: { ans = [] } = {} } = userActiviti;
-  const [ansRender, setAns] = useState(ans); //ansRender just will be test
+  const ansRender = ans; //ansRender just will be test
   const [isSubmit, setIsSubmit] = useState(false);
   const [ansStatus, setAnsStatus] = useState(true);
   const [showAns, setShowAns] = useState(false);
-  console.log('ansRender', ansRender);
+  const [updating, setUpdating] = useState(false);
+  const dispatch = useDispatch();
+  const loggedIn = useShallowEqualSelector((state) => state.auth.loggedIn);
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+
   const grenarateIndex = (defaultIndex = -1) => {
     let _index = Math.floor((defaultIndex + 1) % data.data.length);
     let count = 0;
@@ -34,27 +47,105 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
         break;
       }
       count++;
+      _index++;
     }
     return _index;
   };
 
   const [index, setIndex] = useState(grenarateIndex);
-  const [inputValue, setInputValue] = useState(data?.data[index].ans[0]);
-  console.log('index', index, data.data[index].ans);
-
+  const [inputValue, setInputValue] = useState(data?.data[index]?.ans[0]);
+  const checkFitnished = (newAns) => {
+    let fitnished = true;
+    data.data.forEach((el, index) => {
+      if (isEmptyAns(newAns[index])) {
+        fitnished = false;
+      }
+    });
+    return fitnished;
+  };
   const onSubmit = () => {
-    console.log('submit');
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
+    let percentage = 0,
+      rootAns = [];
     setIsSubmit(true);
+    setUpdating(true);
+    data.data.forEach((question, index) => {
+      rootAns.push(question.ans);
+    });
     if (inputValue.trim() === data?.data[index].ans) {
       let _ans = [...ansRender];
       _ans[index] = inputValue;
-      setAns(_ans);
+
+      percentage = calculatePercentageScoreListening({
+        ans: rootAns,
+        userAns: _ans,
+        countSubmit: countSubmit + 1,
+      });
+      dispatch(
+        updateUser(
+          {
+            data: {
+              ...userActiviti,
+              status: checkFitnished(_ans)
+                ? checkScorePass(percentage, 100)
+                  ? 2
+                  : -1
+                : 1,
+              description: `Your grade on this activity is ${percentage}%.`,
+              countSubmit: userActiviti.countSubmit + 1,
+              data: {
+                ans: _ans,
+              },
+              grade: percentage,
+              updateAt: new Date().getTime(),
+            },
+            unitNumber: Number(unitNumber) - 1,
+            type: userActiviti.type,
+          },
+          (err, res) => {
+            setUpdating(false);
+            if (err) {
+              setError(err.error_message);
+            }
+          }
+        )
+      );
+
       return setAnsStatus(true);
     }
+    percentage = calculatePercentageScoreListening({
+      ans: rootAns,
+      userAns: ansRender,
+      countSubmit: countSubmit + 1,
+    });
+    dispatch(
+      updateUser(
+        {
+          data: {
+            ...userActiviti,
+            description: `Your grade on this activity is ${percentage}%.`,
+            countSubmit: userActiviti.countSubmit + 1,
+            grade: percentage,
+            updateAt: new Date().getTime(),
+          },
+
+          unitNumber: Number(unitNumber) - 1,
+          type: userActiviti.type,
+        },
+        (err, res) => {
+          setUpdating(false);
+          if (err) {
+            setError(err.error_message);
+          }
+        }
+      )
+    );
+
     setAnsStatus(false);
   };
   const nextIndex = () => {
-    console.log('nextIndex');
     setIsSubmit(false);
     setShowAns(false);
     let _index = grenarateIndex(index);
@@ -65,13 +156,54 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
     //call api submit here
   };
   const onRedu = () => {
-    console.log('onRedu');
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
+    setUpdating(true);
+    dispatch(
+      updateUser(
+        {
+          data: {
+            ...userActiviti,
+            grade: 0,
+            status: 0,
+            description: data.description,
+            data: {
+              ans: data.data.map(() => ''),
+            },
+            countSubmit: 0,
+            updateAt: new Date().getTime(),
+          },
+          unitNumber: Number(unitNumber) - 1,
+          type: userActiviti.type,
+        },
+        (err, res) => {
+          if (!err) {
+            let _index = 0;
+            setIndex(_index);
+            setIsSubmit(false);
+            setUpdating(false);
+            setAnsStatus(false);
+            setInputValue(data?.data[_index]?.ans[0]);
+          }
+          if (err) {
+            setError(err.error_message);
+          }
+        }
+      )
+    );
   };
   const playAudio = (_audioUrl) => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     let audio = new Audio(_audioUrl);
     audio.play();
   };
   const onInputChange = (e) => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     setInputValue(e.target.value);
   };
   let percentage = '';
@@ -91,14 +223,13 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
   return (
     <Box mt="22px" pb="22px">
       <TitleWelComeActivity>
-        <Text
+        <Box
           dangerouslySetInnerHTML={{
-            __html:
-              status === 2
-                ? STATUS[status].replace(`{{score}}`, percentage)
-                : STATUS[status],
+            __html: [-1, 2].includes(status)
+              ? STATUS[status].replace(`{{score}}`, percentage)
+              : STATUS[status],
           }}
-        ></Text>
+        ></Box>
       </TitleWelComeActivity>
       {[0, 1].includes(status) ? (
         <Flex flexWrap="wrap" gap="22px">
@@ -112,7 +243,7 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
             minW="400px"
           >
             <ButtonPlayAudio
-              onClick={() => playAudio(data?.data[index].audioUrl)}
+              onClick={() => playAudio(data?.data[index]?.audioUrl)}
             />
             <Flex alignItems="center" mt="12px">
               <Input
@@ -139,7 +270,7 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
               )}
             </Flex>
           </Flex>
-          {/* <Flex
+          <Flex
             flexWrap="wrap"
             gap="12px"
             alignItems="center"
@@ -154,12 +285,19 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
             ) : (
               ''
             )}
-            {percentage !== 100 ? <Button>Restart</Button> : ''}
-          </Flex> */}
+            {percentage && percentage !== 100 ? (
+              <Button onClick={onRedu}>Restart</Button>
+            ) : (
+              ''
+            )}
+          </Flex>
         </Flex>
       ) : (
         ''
       )}
+      <Text mt="12px" color="red">
+        {error}
+      </Text>
       <Flex mt="22px" gap="22">
         {[0, 1].includes(status) ? (
           <>
@@ -168,7 +306,7 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
                 {!ansStatus || showAns ? (
                   <Text mb="22px">
                     The correct answer was:{' '}
-                    <strong>{data?.data[index].ans}</strong>
+                    <strong>{data?.data[index]?.ans}</strong>
                   </Text>
                 ) : (
                   ''
@@ -182,13 +320,25 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
                 <Button
                   onClick={onSubmit}
                   colorScheme="green"
+                  isLoading={updating}
+                  loadingText="Submit"
                   isDisabled={
-                    !inputValue || inputValue === data?.data[index].ans[0]
+                    !inputValue ||
+                    inputValue === data?.data[index]?.ans[0] ||
+                    updating
                   }
                 >
                   Submit
                 </Button>
-                <Button colorScheme="blue" onClick={() => setShowAns(true)}>
+                <Button
+                  colorScheme="blue"
+                  onClick={() => {
+                    if (!loggedIn) {
+                      return navigate('/auth/login');
+                    }
+                    setShowAns(true);
+                  }}
+                >
                   HELP
                 </Button>
               </>

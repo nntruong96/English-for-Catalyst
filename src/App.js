@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect } from 'react';
-import { ChakraProvider, Container } from '@chakra-ui/react';
+import { ChakraProvider, Box, Spinner, Container } from '@chakra-ui/react';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
@@ -8,29 +8,44 @@ import indexRoutes from 'routes';
 import Header from 'components/Header';
 import theme from 'theme';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
-import { fetchUser } from 'redux/actions/userActions';
+import { fetchUser, fetchClassRoom } from 'redux/actions/userActions';
 import { useDispatch } from 'react-redux';
+import { getUnits } from 'redux/actions/documents';
 import 'app.css';
-const switchRoutes = (
-  <>
-    <Routes>
-      <Route path={'*'} element={<Header />} key={0} />
-    </Routes>
-    <Container maxW="container.xl">
+const SwitchRoutes = () => {
+  const { loggedIn } = useShallowEqualSelector((state) => {
+    return {
+      loggedIn: state.auth.loggedIn,
+    };
+  });
+  return (
+    <>
       <Routes>
-        {indexRoutes.map((prop, key) => {
-          return <Route path={prop.path} element={prop.component} key={key} />;
-        })}
+        <Route path={'*'} element={<Header />} key={0} />
       </Routes>
-    </Container>
-  </>
-);
+      <Container maxW="container.xl">
+        <Routes>
+          {indexRoutes.map((prop, key) => {
+            if (prop.requireLogin && !loggedIn) {
+              return null;
+            }
+            return (
+              <Route path={prop.path} element={prop.component} key={key} />
+            );
+          })}
+        </Routes>
+      </Container>
+    </>
+  );
+};
 function App() {
   return (
     <Provider store={store}>
       <ChakraProvider theme={theme}>
         <ContainerApp>
-          <BrowserRouter>{switchRoutes}</BrowserRouter>
+          <BrowserRouter>
+            <SwitchRoutes />
+          </BrowserRouter>
         </ContainerApp>
       </ChakraProvider>
     </Provider>
@@ -39,15 +54,46 @@ function App() {
 
 function ContainerApp({ children }) {
   const dispatch = useDispatch();
-  const { loggedIn, hasFetched } = useShallowEqualSelector((state) => {
-    return { loggedIn: state.auth.loggedIn, hasFetched: state.user.hasFetched };
+  const {
+    loggedIn,
+    hasFetched,
+    hasFetchedUnit,
+    isFetchingUser,
+    isFetchingUnit,
+    units,
+  } = useShallowEqualSelector((state) => {
+    return {
+      loggedIn: state.auth.loggedIn,
+      isFetchingUser: state.user.isFetching,
+      hasFetched: state.user.hasFetched,
+      hasFetchedUnit: state.documents.hasFetched,
+      isFetchingUnit: state.documents.isFetching,
+      units: state.documents.units,
+    };
   });
   useEffect(() => {
-    if (loggedIn && !hasFetched) {
-      console.log('fetchUser');
+    if (loggedIn && !hasFetched && !isFetchingUser) {
       dispatch(fetchUser());
+      dispatch(fetchClassRoom());
     }
-  }, [loggedIn, hasFetched]);
+    if (!hasFetchedUnit && !isFetchingUnit) {
+      dispatch(getUnits());
+    }
+  }, [loggedIn]);
+  if (isFetchingUnit || !units || !units.length) {
+    //render spiner there
+    return (
+      <Box
+        w="full"
+        h="full"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner color="blue" />
+      </Box>
+    );
+  }
   return children;
 }
 export default App;

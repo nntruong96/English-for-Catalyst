@@ -8,6 +8,7 @@ import WelcomePage from 'pages/Welcome';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import UnitList from 'components/UnitList';
 import { BsTrophy } from 'react-icons/bs';
+import ContainerForm from 'components/ContainerForm';
 export default function Main(props) {
   let isLogged = useShallowEqualSelector((state) => state.auth.loggedIn);
   return (
@@ -16,18 +17,9 @@ export default function Main(props) {
         <Box p="22px">
           <Text fontWeight="bold">Welcome to English for Catalyst. </Text>
           <UnitList />
-          <Box>
-            <Text
-              fontWeight="bold"
-              mt="22px"
-              fontSize="20px"
-              bg="blue.600"
-              color="white"
-              p="4px 12px"
-            >
-              Certification Progress: You are not certified
-            </Text>
-            <Flex border="1px solid gray" p="22px">
+
+          <ContainerForm title=" Certification Progress: You are not certified">
+            <Flex p="12px">
               <Icon as={BsTrophy} w="70px" h="70px" color="#1995CA" />
               <Text px="22px">
                 To earn the English for Catalyst Units module certificate,
@@ -37,7 +29,7 @@ export default function Main(props) {
                 met.
               </Text>
             </Flex>
-          </Box>
+          </ContainerForm>
         </Box>
       ) : (
         <WelcomePage></WelcomePage>

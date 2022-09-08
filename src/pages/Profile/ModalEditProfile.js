@@ -31,7 +31,9 @@ export default function Index({ isOpen, onClose }) {
     firstName: userInfo.firstName,
     lastName: userInfo.lastName,
   });
+  const [error, setError] = useState('');
   useEffect(() => {
+    setError('');
     setInfo({
       firstName: userInfo.firstName,
       lastName: userInfo.lastName,
@@ -42,7 +44,20 @@ export default function Index({ isOpen, onClose }) {
     dispatch(
       updateCurrentUser(info, (err) => {
         console.log('err', err);
+        if (!err) {
+          return onClose();
+        }
+        setError(err.error_message);
       })
+    );
+  };
+  const isDisabled = () => {
+    return (
+      !info.firstName ||
+      !info.lastName ||
+      !info.firstName.trim() ||
+      !info.lastName.trim() ||
+      isUpdating
     );
   };
   return (
@@ -51,7 +66,13 @@ export default function Index({ isOpen, onClose }) {
       <ModalContent>
         <ModalHeader>Edit Profile</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !isDisabled()) {
+              submit();
+            }
+          }}
+        >
           <Box mb="22px">
             <Text fontWeight="bold" mb="12px">
               First Name
@@ -94,18 +115,15 @@ export default function Index({ isOpen, onClose }) {
               />
             </InputGroup>
           </Box>
+          <Text color="red" mt="12px" fontSize="12px">
+            {error}
+          </Text>
         </ModalBody>
 
         <ModalFooter>
           <Button
             colorScheme="blue"
-            isDisabled={
-              !info.firstName ||
-              !info.lastName ||
-              !info.firstName.trim() ||
-              !info.lastName.trim() ||
-              isUpdating
-            }
+            isDisabled={isDisabled()}
             mr={3}
             isLoading={isUpdating}
             loadingText="SAVE"

@@ -2,7 +2,7 @@
  *
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -60,13 +60,21 @@ export default function Index({ isOpen, onClose }) {
     });
     onClose();
   };
+  const isDisabled = () =>
+    !info.password || !info.confirm || error || isUpdating;
   return (
     <Modal isOpen={isOpen} onClose={_onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Change Password</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !isDisabled()) {
+              submit();
+            }
+          }}
+        >
           <Box mb="22px">
             <Text fontWeight="bold" mb="12px">
               Curren Password
@@ -142,7 +150,7 @@ export default function Index({ isOpen, onClose }) {
         <ModalFooter>
           <Button
             colorScheme="blue"
-            isDisabled={!info.password || !info.confirm || error || isUpdating}
+            isDisabled={isDisabled()}
             mr={3}
             isLoading={isUpdating}
             loadingText="SAVE"

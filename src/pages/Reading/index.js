@@ -10,6 +10,12 @@ import ModalVocabulary from 'components/ModalVocabulary';
 import QuestionRadioList from 'components/QuestionRadioList';
 import StatusQuizTest from 'components/StatusQuizTest';
 import { Link } from 'react-router-dom';
+import { isEmptyAns } from 'util/Constants';
+import { useDispatch } from 'react-redux';
+import { updateUser } from 'redux/actions/userActions';
+import { checkScorePass } from 'util/Constants';
+import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
+import { useNavigate } from 'react-router';
 const Title = function ({ text, ...styles }) {
   return (
     <Text
@@ -30,13 +36,19 @@ export default function Reading({
   data,
   vocabularyData,
   ans = [],
-  status = 0,
   unitNumber,
+  activiti = {},
 }) {
   const [dataRender, setData] = useState({});
   const [vocabularySelected, setVocabulary] = useState();
   const [isOpen, setIsOpen] = useState(false);
   const [ansRender, setAns] = useState(ans);
+  const [updating, setUpdating] = useState(false);
+  const dispatch = useDispatch();
+  const { status = 0 } = activiti;
+  const loggedIn = useShallowEqualSelector((state) => state.auth.loggedIn);
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
   let { audioUrl, questions, read } = data.data;
   useEffect(() => {
     if (JSON.stringify(dataRender) !== JSON.stringify(data)) {
@@ -54,7 +66,11 @@ export default function Reading({
     setIsOpen(false);
     setVocabulary(null);
   };
+
   const onAnsChange = (index, value) => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     let _ans = [...ansRender];
     _ans[index] = value;
     setAns(_ans);
@@ -63,13 +79,16 @@ export default function Reading({
     let disabled = !Boolean(ansRender.length);
     for (let i = 0; i < questions.length; i++) {
       let item = ansRender[i];
-      if (item === undefined || item === null) {
+      if (isEmptyAns(item)) {
         disabled = true;
       }
     }
-    return disabled;
+    return disabled || updating;
   };
   const onVocabClick = (event) => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
     let text = event.target.innerText;
     let vocabulary = vocabularyData.data.find(
       (item) =>
@@ -82,9 +101,73 @@ export default function Reading({
     }
   };
   const onSubmit = () => {
-    console.log('onSubmit', ansRender);
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
+    let cnt = 0;
+    questions.forEach((question, index) => {
+      if (question.ans === ansRender[index]) {
+        cnt++;
+      }
+    });
+    let isPass = checkScorePass(cnt, questions.length);
+    setUpdating(true);
+    dispatch(
+      updateUser(
+        {
+          data: {
+            ...activiti,
+            status: isPass ? 2 : -1,
+            description: `Reading and questions finished. ${
+              isPass ? 'You passed' : 'You failed'
+            }`,
+            data: {
+              ans: ansRender,
+            },
+            updateAt: new Date().getTime(),
+          },
+          unitNumber: Number(unitNumber) - 1,
+          type: activiti.type,
+        },
+        (err, res) => {
+          setUpdating(false);
+          if (err) {
+            setError(err.error_message);
+          }
+        }
+      )
+    );
   };
-  console.log('questions', ans, status);
+  const onRedu = () => {
+    if (!loggedIn) {
+      return navigate('/auth/login');
+    }
+    setUpdating(true);
+    dispatch(
+      updateUser(
+        {
+          data: {
+            ...activiti,
+            status: 0,
+            description: data.description,
+            data: {
+              ans: questions.map(() => ''),
+            },
+            updateAt: new Date().getTime(),
+          },
+          unitNumber: Number(unitNumber) - 1,
+          type: activiti.type,
+        },
+        (err, res) => {
+          setUpdating(false);
+          setAns([]);
+          if (err) {
+            setError(err.error_message);
+          }
+        }
+      )
+    );
+  };
   const renderButtons = () => {
     switch (status) {
       case -1:
@@ -123,9 +206,7 @@ export default function Reading({
         break;
     }
   };
-  const onRedu = () => {
-    console.log('redu');
-  };
+
   return (
     <Box mt="22px" pb="22px">
       <TitleWelComeActivity>
@@ -154,6 +235,9 @@ export default function Reading({
         isDisabled={Boolean(status === -1 || status === 2)}
         status={status}
       />
+      <Text mt="12px" color="red">
+        {error}
+      </Text>
       <Flex mt="22px" gap="22">
         {renderButtons()}
       </Flex>

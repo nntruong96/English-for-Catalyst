@@ -3,7 +3,7 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React from 'react';
-import { Box, Text } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import {
   Table,
   Thead,
@@ -11,7 +11,6 @@ import {
   Tr,
   Th,
   Td,
-  TableCaption,
   TableContainer,
   Icon,
 } from '@chakra-ui/react';
@@ -33,14 +32,12 @@ const HEADER = [
   },
 ];
 export default function Index(props) {
-  const { units, user } = useShallowEqualSelector((state) => ({
+  const { units } = useShallowEqualSelector((state) => ({
     units: state.documents.units,
-    user: state.user,
   }));
   return (
     <TableContainer>
       <Table variant="simple">
-        <TableCaption>Imperial to metric conversion factors</TableCaption>
         <Thead>
           <Tr>
             {HEADER.map((item, index) => (

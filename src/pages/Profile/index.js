@@ -5,16 +5,13 @@
 import React, { useState } from 'react';
 import { Box, Text, Flex, Button, Icon } from '@chakra-ui/react';
 import TitlePage from 'components/TitlePage';
-import Title from 'components/TitlteForm';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useNavigate } from 'react-router';
 import ModalEditProfile from './ModalEditProfile';
 import ModalChangePassword from './ModalChangePassword';
 import { MdVpnKey, MdEdit } from 'react-icons/md';
-const containerStyle = {
-  mt: '22px',
-  border: '1px solid #e3e3e3',
-};
+import ContainerForm from 'components/ContainerForm';
+import Grade from 'components/Grade';
 const KEYS = ['role', 'firstName', 'lastName', 'email', '_id'];
 const LABELS = {
   role: 'Account Type',
@@ -23,19 +20,10 @@ const LABELS = {
   email: 'Email Address',
   _id: 'User Id',
 };
-function ContainerBox({ children, title }) {
-  return (
-    <Box {...containerStyle}>
-      <Title text={title} />
-      <Box p="12px" overflow="auto">
-        {children}
-      </Box>
-    </Box>
-  );
-}
+const ACCOUNT_TYPE = ['Admin', 'Teacher', 'Student'];
 export default function Profile(props) {
-  const { userInfo } = useShallowEqualSelector((state) => {
-    return { userInfo: state.user.user };
+  const { userInfo, userUnits } = useShallowEqualSelector((state) => {
+    return { userInfo: state.user.user, userUnits: state.user.userUnits };
   });
   const navigate = useNavigate();
   const [isOpenEdit, setOpenEdit] = useState(false);
@@ -47,9 +35,8 @@ export default function Profile(props) {
       navigate('/', { replace: true });
     }
   };
-  let name = userInfo.firstName + ' ' + userInfo.lastName;
+  let name = (userInfo.firstName || '') + ' ' + (userInfo.lastName || '');
   let title = name !== ' ' ? name : userInfo._id;
-
   return (
     <Box mt="22px">
       <TitlePage title={title} mb="22px" onBack={onBack} />
@@ -63,21 +50,31 @@ export default function Profile(props) {
           CHANGE PASSWORD
         </Button>
       </Flex>
-      <ContainerBox title="USER INFOMATION">
+      <ContainerForm title="User Information">
         {KEYS.map((key, index) => {
           return (
             <Flex gap="22px" key={index} py="12px">
               <Text w="30%" maxW="300px" minW="120px" fontWeight="bold">
                 {LABELS[key]}:
               </Text>
-              <Text>{userInfo[key]}</Text>
+              <Text>
+                {key === 'role'
+                  ? ACCOUNT_TYPE[Number(userInfo[key])]
+                  : userInfo[key]}
+              </Text>
             </Flex>
           );
         })}
-      </ContainerBox>
-      <ContainerBox title="Classroom"></ContainerBox>
-      <ContainerBox title="Grading Summary"></ContainerBox>
-      <ContainerBox title="Certification Status"></ContainerBox>
+      </ContainerForm>
+      {/* <ContainerForm title="Classroom"></ContainerForm> */}
+      <Grade
+        user={userInfo}
+        userUnits={userUnits}
+        hideTitle
+        hideActivites
+        hideUnits
+      />
+      {/* <ContainerForm title="Certification Status"></ContainerForm> */}
       <ModalEditProfile
         isOpen={isOpenEdit}
         onClose={() => setOpenEdit(false)}

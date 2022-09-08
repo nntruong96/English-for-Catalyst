@@ -21,6 +21,9 @@ const {
   REQUEST_UPDATE_USER_SUCCESS,
   REQUEST_UPDATE_USER_FAILURE,
   UPDATE_USER_SETTING,
+  REQUEST_CLASS_ROOM_FAILURE,
+  REQUEST_CLASS_ROOM_SUCCESS,
+  REQUEST_POST_COMMENT_SUCCESS,
 } = userConstants;
 
 export const invalidAvatar = () => {
@@ -183,26 +186,94 @@ export const updateCurrentUser = (data, callback, isUpdatingSetting) => {
   };
 };
 
-export const updateUser = (setting, callback) => {
-  let success = (settings) => ({
+export const updateUser = (data, callback = () => {}) => {
+  let success = (userUnits) => ({
     type: UPDATE_USER_SETTING,
-    settings,
+    userUnits,
   });
   return (dispatch) => {
     return userClient
-      .updateCurrentUserSetting(setting)
+      .updateCurrentUserUnit(data)
       .then((res) => {
+        console.log('res', res);
         if (res && res.data) {
+          if (res.data.error_code) {
+            throw new Error(res.data);
+          }
           if (callback) {
             callback(null, res);
           }
-          dispatch(success(res.data.settings));
+          console.log('res.data.userUnits', res.data.userUnits);
+          dispatch(success(res.data.userUnits));
         }
       })
       .catch((err) => {
-        if (callback) {
-          callback(err);
+        errorRes(dispatch, null, err, null, callback);
+      });
+  };
+};
+export const fetchClassRoom = () => {
+  let failure = () => {
+    return {
+      type: REQUEST_CLASS_ROOM_FAILURE,
+    };
+  };
+  let receiveClassRoom = (clasRoom) => {
+    return {
+      type: REQUEST_CLASS_ROOM_SUCCESS,
+      data: clasRoom,
+    };
+  };
+  return (dispatch) => {
+    dispatch(requestUser());
+    return userClient
+      .getCurrentClassRoom()
+      .then((res) => {
+        dispatch(receiveClassRoom(res.data));
+      })
+      .catch((err) => {
+        errorRes(dispatch, failure, err, null);
+        // dispatch(authActions.resetApp());
+      });
+  };
+};
+
+export const postComment = (data, callback) => {
+  let success = (comments) => ({
+    type: REQUEST_POST_COMMENT_SUCCESS,
+    comments,
+  });
+  return (dispatch) => {
+    return userClient
+      .postComment(data)
+      .then((res) => {
+        console.log('res', res.body);
+        if (res && res.error_code) {
+          return errorRes(
+            dispatch,
+            null,
+            res.body,
+            {
+              show: true,
+              type: 'warning',
+              title: '',
+            },
+            callback
+          );
         }
+        successRes(
+          dispatch,
+          success,
+          res.body,
+          {
+            show: true,
+            type: 'success',
+          },
+          callback
+        );
+      })
+      .catch((err) => {
+        errorRes(dispatch, null, err, null);
       });
   };
 };

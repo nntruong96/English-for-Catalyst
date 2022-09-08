@@ -18,6 +18,8 @@ const {
   REQUEST_UPDATE_USER_SUCCESS,
   REQUEST_UPDATE_USER_FAILURE,
   UPDATE_USER_SETTING,
+  REQUEST_CLASS_ROOM_SUCCESS,
+  REQUEST_POST_COMMENT_SUCCESS,
 } = userConstants;
 
 const initialState = {
@@ -29,7 +31,8 @@ const initialState = {
   isUpdating: false,
   updateFailed: false,
   user: {},
-  userUnits: MockData.userUnits,
+  userUnits: [],
+  classRoom: {},
 };
 
 const user = createReducer(initialState, {
@@ -41,6 +44,7 @@ const user = createReducer(initialState, {
     state.hasFetched = true;
     state.isFetching = false;
     state.user = action.user;
+    state.userUnits = action.user.userUnits;
     return state;
   },
   [REQUEST_USER]: (state, action) => {
@@ -87,7 +91,15 @@ const user = createReducer(initialState, {
     return state;
   },
   [UPDATE_USER_SETTING]: (state, action) => {
-    state.user.settings = action.settings;
+    state.userUnits = action.userUnits;
+    return state;
+  },
+  [REQUEST_CLASS_ROOM_SUCCESS]: (state, action) => {
+    state.classRoom = action.data;
+    return state;
+  },
+  [REQUEST_POST_COMMENT_SUCCESS]: (state, action) => {
+    state.classRoom.comments = action.comments;
     return state;
   },
 });
