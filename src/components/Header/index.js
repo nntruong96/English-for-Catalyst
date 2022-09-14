@@ -11,7 +11,7 @@ export default function Header(props) {
   return (
     <Flex p="12px" position="sticky" top="0" zIndex={10} bg="#f5f5f5">
       <Container
-        maxW="container.xl"
+        maxW="container.lg"
         justifyContent="space-between"
         display="flex"
       >

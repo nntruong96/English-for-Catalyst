@@ -3,7 +3,7 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React from 'react';
-import { Box } from '@chakra-ui/react';
+import { Box, Text, Flex } from '@chakra-ui/react';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useParams, useNavigate, Navigate } from 'react-router';
 import TitlePage from 'components/TitlePage';
@@ -15,7 +15,24 @@ import Listening from 'pages/Listening';
 import Spelling from 'pages/Spelling';
 import Speaking from 'pages/Speaking';
 import Writing from 'pages/Writing';
-export default function Index(props) {
+import ContainerForm from 'components/ContainerForm';
+import { getName } from 'util/Constants';
+import moment from 'moment';
+const Row = ({ label, value }) => {
+  return (
+    <Flex gap="12px">
+      <Text fontWeight="bold">{label}:</Text>
+      <Text>{value}</Text>
+    </Flex>
+  );
+};
+export default function Index({
+  isGrade,
+  studentUnits,
+  userId,
+  classroomId,
+  studentInfo,
+}) {
   let params = useParams();
   const { units, user } = useShallowEqualSelector((state) => ({
     units: state.documents.units,
@@ -23,16 +40,41 @@ export default function Index(props) {
   }));
   const { userUnits } = user;
   const navigate = useNavigate();
-  const onBack = () => navigate('/unit/' + unitNumber);
+  const onBack = () =>
+    !isGrade ? navigate('/unit/' + unitNumber) : navigate(-1);
   let { unitNumber, activityName } = params;
   let index = Number(unitNumber - 1);
   const unit = units[index];
   if (!unit) {
     return <Navigate to="/" replace={true} />;
   }
+  const getUserUnitRender = () =>
+    isGrade ? studentUnits[index] : userUnits[index];
+  const getUserActiviti = () => {
+    let userUnit = getUserUnitRender();
+    switch (activityName) {
+      case Constants.ACTIVITES_NAME[0]:
+        return userUnit?.actitivies[0];
+      case Constants.ACTIVITES_NAME[1]:
+        return userUnit?.actitivies[1];
+      case Constants.ACTIVITES_NAME[2]:
+        return userUnit?.actitivies[2];
+      case Constants.ACTIVITES_NAME[3]:
+        return userUnit?.actitivies[3];
+      case Constants.ACTIVITES_NAME[4]:
+        return userUnit?.actitivies[4];
+      case Constants.ACTIVITES_NAME[5]:
+        return userUnit?.actitivies[5];
+      case Constants.ACTIVITES_NAME[6]:
+        return userUnit?.actitivies[6];
+
+      default:
+        return <div>doi xiu dang code</div>;
+    }
+  };
   const renderActivity = () => {
     let vocabularyData;
-    let userUnit = userUnits[index],
+    let userUnit = getUserUnitRender(),
       ans,
       status = 0;
     switch (activityName) {
@@ -43,6 +85,7 @@ export default function Index(props) {
             data={vocabularyData}
             unitNumber={unitNumber}
             activiti={userUnit?.actitivies[0]}
+            isGrade={isGrade}
           />
         );
       case Constants.ACTIVITES_NAME[1]:
@@ -56,6 +99,7 @@ export default function Index(props) {
             vocabularyData={vocabularyData}
             unitNumber={unitNumber}
             activiti={userUnit?.actitivies[1]}
+            isGrade={isGrade}
           />
         );
       case Constants.ACTIVITES_NAME[2]:
@@ -65,6 +109,7 @@ export default function Index(props) {
             data={mutipleData}
             unitNumber={unitNumber}
             activiti={userUnit?.actitivies[2]}
+            isGrade={isGrade}
           />
         );
       case Constants.ACTIVITES_NAME[3]:
@@ -76,6 +121,7 @@ export default function Index(props) {
             ans={ans}
             unitNumber={unitNumber}
             userActiviti={userUnit?.actitivies[3]}
+            isGrade={isGrade}
           />
         );
       case Constants.ACTIVITES_NAME[4]:
@@ -87,6 +133,7 @@ export default function Index(props) {
             ans={ans}
             unitNumber={unitNumber}
             userActiviti={userUnit?.actitivies[4]}
+            isGrade={isGrade}
           />
         );
       case Constants.ACTIVITES_NAME[5]:
@@ -98,6 +145,9 @@ export default function Index(props) {
             ans={ans}
             unitNumber={unitNumber}
             userActiviti={userUnit?.actitivies[5]}
+            isGrade={isGrade}
+            userId={userId}
+            classroomId={classroomId}
           />
         );
       case Constants.ACTIVITES_NAME[6]:
@@ -109,19 +159,57 @@ export default function Index(props) {
             ans={ans}
             unitNumber={unitNumber}
             userActiviti={userUnit?.actitivies[6]}
+            isGrade={isGrade}
+            userId={userId}
+            classroomId={classroomId}
           />
         );
       default:
         return <div>doi xiu dang code</div>;
     }
   };
+  let activiRender = getUserActiviti();
   return (
     <Box>
       <TitlePage
-        title={`UNIT ${unitNumber}: ${Constants.ACTIVITES_NAME_TO_TITLE[activityName]}`}
+        title={
+          isGrade
+            ? `GRADE ${Constants.ACTIVITES_NAME_TO_TITLE[
+                activityName
+              ].toUpperCase()}`
+            : `UNIT ${unitNumber}: ${Constants.ACTIVITES_NAME_TO_TITLE[activityName]}`
+        }
         onBack={onBack}
         mt="22px"
       />
+      {isGrade ? (
+        <ContainerForm title="Student Information">
+          <Row label="Name" value={getName(studentInfo)} />
+          <Row label="Unit" value={units[index]?.title} />
+          {activiRender?.updateAt ? (
+            <Row
+              label="Submission Date"
+              value={moment(activiRender?.updateAt).format(
+                'YYYY-MM-DD hh:mm:ss'
+              )}
+            />
+          ) : (
+            ''
+          )}
+          {activiRender?.gradeAt ? (
+            <Row
+              label="Last Grade Date"
+              value={moment(activiRender?.gradeAt).format(
+                'YYYY-MM-DD hh:mm:ss'
+              )}
+            />
+          ) : (
+            ''
+          )}
+        </ContainerForm>
+      ) : (
+        ''
+      )}
       {renderActivity()}
     </Box>
   );

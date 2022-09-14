@@ -20,12 +20,19 @@ export default function Index({ classRoom, user }) {
   };
   const submit = () => {
     dispatch(
-      postComment({
-        message: value,
-        userId: user._id,
-        crateAt: Date.now(),
-        classRoomId: classRoom._id,
-      })
+      postComment(
+        {
+          message: value,
+          userId: user._id,
+          crateAt: Date.now(),
+          classRoomId: classRoom._id,
+        },
+        (err, res) => {
+          if (!err) {
+            setValue('');
+          }
+        }
+      )
     );
   };
   const { comments } = classRoom;

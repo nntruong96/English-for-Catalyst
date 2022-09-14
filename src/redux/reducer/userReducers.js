@@ -5,7 +5,6 @@
 import { createReducer } from '@reduxjs/toolkit';
 import { userConstants } from '../constants';
 import { RESET_APP } from '../constants';
-import MockData from 'redux/MockData';
 const {
   REQUEST_USER,
   REQUEST_USER_FAILURE,
@@ -20,6 +19,8 @@ const {
   UPDATE_USER_SETTING,
   REQUEST_CLASS_ROOM_SUCCESS,
   REQUEST_POST_COMMENT_SUCCESS,
+  REQUEST_GRADE_COMMENT_SUCCESS,
+  REQUEST_UPDATE_CLASSROOM_SUCCESS,
 } = userConstants;
 
 const initialState = {
@@ -100,6 +101,21 @@ const user = createReducer(initialState, {
   },
   [REQUEST_POST_COMMENT_SUCCESS]: (state, action) => {
     state.classRoom.comments = action.comments;
+    return state;
+  },
+  [REQUEST_GRADE_COMMENT_SUCCESS]: (state, action) => {
+    let { userUnits, studentId } = action;
+    let studentIndex = state.classRoom.students.findIndex(
+      (item) => item._id === studentId
+    );
+    if (studentIndex >= 0) {
+      state.classRoom.students[studentIndex].userUnits = userUnits;
+    }
+    return state;
+  },
+  [REQUEST_UPDATE_CLASSROOM_SUCCESS]: (state, action) => {
+    let { classRoom } = action;
+    state.classRoom.settings = classRoom;
     return state;
   },
 });

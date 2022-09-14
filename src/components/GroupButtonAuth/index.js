@@ -11,6 +11,7 @@ import {
   MenuButton,
   Menu,
   MenuList,
+  Text,
   MenuItem,
 } from '@chakra-ui/react';
 import {
@@ -20,12 +21,13 @@ import {
   BsList,
   BsPersonFill,
 } from 'react-icons/bs';
-import { ColorModeSwitcher } from 'components/ColorModeSwitcher';
+// import { ColorModeSwitcher } from 'components/ColorModeSwitcher';
 import { logout } from 'redux/actions/authActions';
 import { Link } from 'react-router-dom';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useDispatch } from 'react-redux';
-const GroupButton = function ({ isLogged }) {
+import { getName, compact } from 'util/Constants';
+const GroupButton = function ({ isLogged, user }) {
   const dispatch = useDispatch();
 
   return (
@@ -33,8 +35,10 @@ const GroupButton = function ({ isLogged }) {
       {!isLogged ? (
         <Box as={Link} to="/auth/register" w="full">
           <Button mr="12px" size="lg" w="full">
-            <Icon as={BsFillPersonPlusFill} mr="12px" />
-            SIGN UP
+            <Text display="flex" alignItems="center">
+              <Icon as={BsFillPersonPlusFill} mr="12px" />
+              SIGN UP
+            </Text>
           </Button>
         </Box>
       ) : (
@@ -47,8 +51,10 @@ const GroupButton = function ({ isLogged }) {
       {!isLogged ? (
         <Box as={Link} to="/auth/login" w="full">
           <Button colorScheme="blue" size="lg" w="full">
-            <Icon as={BsArrowBarRight} mr="12px" />
-            Login
+            <Text display="flex" alignItems="center">
+              <Icon as={BsArrowBarRight} mr="12px" />
+              Login
+            </Text>
           </Button>
         </Box>
       ) : (
@@ -59,9 +65,13 @@ const GroupButton = function ({ isLogged }) {
               w="full"
               size="lg"
               rightIcon={<Icon as={BsChevronDown} />}
+              display="flex"
+              alignItems="center"
             >
-              <Icon as={BsPersonFill} mr="12px" />
-              My Account
+              <Text display="flex" alignItems="center">
+                <Icon as={BsPersonFill} mr="12px" />
+                {compact(getName(user))}
+              </Text>
             </MenuButton>
             <MenuList>
               <Flex
@@ -77,9 +87,6 @@ const GroupButton = function ({ isLogged }) {
                 <MenuItem as={Link} to="/profile/grade">
                   My Grade
                 </MenuItem>
-                {/* <MenuItem>Create a Copy</MenuItem>
-                <MenuItem>Mark as Draft</MenuItem>
-                <MenuItem>Delete</MenuItem> */}
                 <MenuItem onClick={() => dispatch(logout())}>Logout</MenuItem>
               </Flex>
             </MenuList>
@@ -91,14 +98,16 @@ const GroupButton = function ({ isLogged }) {
   );
 };
 export default function GroupButtonAuth() {
-  const isLogged = useShallowEqualSelector((state) => state.auth.loggedIn);
+  const { isLogged, user } = useShallowEqualSelector((state) => {
+    return { isLogged: state.auth.loggedIn, user: state.user.user };
+  });
   return (
     <Flex>
       <Flex
         gap="12px"
         display={{ base: 'none', md: 'flex', lg: 'flex', xl: 'flex' }}
       >
-        <GroupButton isLogged={isLogged} />
+        <GroupButton isLogged={isLogged} user={user} />
       </Flex>
       <Box display={{ md: 'none', lg: 'none', xl: 'none' }}>
         <Menu>
@@ -113,7 +122,7 @@ export default function GroupButtonAuth() {
               gap="12px"
               p="0px 12px"
             >
-              <GroupButton isLogged={isLogged} />
+              <GroupButton isLogged={isLogged} user={user} />
             </Flex>
           </MenuList>
         </Menu>

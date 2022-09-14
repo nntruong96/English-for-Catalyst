@@ -3,10 +3,10 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React from 'react';
-import { Text } from '@chakra-ui/react';
+import { Text, Box } from '@chakra-ui/react';
 const Title = function ({ text, ...styles }) {
   return (
-    <Text
+    <Box
       fontWeight="bold"
       fontSize="20px"
       bg="blue.600"
@@ -16,7 +16,7 @@ const Title = function ({ text, ...styles }) {
       {...styles}
     >
       {text}
-    </Text>
+    </Box>
   );
 };
 export default Title;

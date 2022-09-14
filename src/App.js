@@ -11,6 +11,7 @@ import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { fetchUser, fetchClassRoom } from 'redux/actions/userActions';
 import { useDispatch } from 'react-redux';
 import { getUnits } from 'redux/actions/documents';
+import SnackBar from 'components/SnackBar';
 import 'app.css';
 const SwitchRoutes = () => {
   const { loggedIn } = useShallowEqualSelector((state) => {
@@ -23,7 +24,7 @@ const SwitchRoutes = () => {
       <Routes>
         <Route path={'*'} element={<Header />} key={0} />
       </Routes>
-      <Container maxW="container.xl">
+      <Container maxW="container.lg">
         <Routes>
           {indexRoutes.map((prop, key) => {
             if (prop.requireLogin && !loggedIn) {
@@ -47,6 +48,7 @@ function App() {
             <SwitchRoutes />
           </BrowserRouter>
         </ContainerApp>
+        <SnackBar />
       </ChakraProvider>
     </Provider>
   );
@@ -60,7 +62,6 @@ function ContainerApp({ children }) {
     hasFetchedUnit,
     isFetchingUser,
     isFetchingUnit,
-    units,
   } = useShallowEqualSelector((state) => {
     return {
       loggedIn: state.auth.loggedIn,
@@ -80,7 +81,7 @@ function ContainerApp({ children }) {
       dispatch(getUnits());
     }
   }, [loggedIn]);
-  if (isFetchingUnit || !units || !units.length) {
+  if (isFetchingUnit || isFetchingUser) {
     //render spiner there
     return (
       <Box
@@ -94,6 +95,11 @@ function ContainerApp({ children }) {
       </Box>
     );
   }
-  return children;
+
+  return (
+    <Box h="full" overflow="auto">
+      {children}
+    </Box>
+  );
 }
 export default App;

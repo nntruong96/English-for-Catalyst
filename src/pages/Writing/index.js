@@ -12,22 +12,39 @@ import {
   Stack,
   Flex,
   Textarea,
+  Select,
 } from '@chakra-ui/react';
 import TitleWelComeActivity from 'components/TitleWelcomeActivity';
 import TitleForm from 'components/TitlteForm';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { updateUser } from 'redux/actions/userActions';
+import { updateUser, gradeActivi } from 'redux/actions/userActions';
 import ContainerForm from 'components/ContainerForm';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useNavigate } from 'react-router';
-const MIN = 65,
-  MAX = 400;
-export default function Speaking({ data, userActiviti = {}, unitNumber }) {
-  let { status = 0, data: { question, ans } = {} } = userActiviti;
+import Editor from 'components/Editor';
+import Constants from 'util/Constants';
+import { checkScorePass } from 'util/Constants';
+const Core = Constants.SCORE;
+const Grade = [{ text: 'Content' }, { text: 'Grammar/spelling' }];
+export default function Speaking({
+  data,
+  userActiviti = {},
+  unitNumber,
+  isGrade,
+  userId, //studentId
+  classroomId,
+}) {
+  let { settings = {} } = useShallowEqualSelector(
+    (state) => state.user.classRoom
+  );
+  let { min = 65, max = 400 } = settings?.writing;
+  let { status = 0, data: { question, ans } = {}, grade } = userActiviti;
   const [inputAns, setAns] = useState('');
+  const [comment, setComment] = useState(userActiviti.comment || '');
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [_grade, setGrade] = useState(grade || [0, 0]);
   const dispatch = useDispatch();
   const loggedIn = useShallowEqualSelector((state) => state.auth.loggedIn);
   const navigate = useNavigate();
@@ -57,14 +74,14 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
     if (!loggedIn) {
       return navigate('/auth/login');
     }
-    if (inputAns && inputAns.trim().length < MIN) {
+    if (inputAns && inputAns.trim().length < min) {
       return setError(
-        `Your answer is too short. It has to be more than ${MIN} words.`
+        `Your answer is too short. It has to be more than ${min} words.`
       );
     }
-    if (inputAns && inputAns.trim().length > MAX) {
+    if (inputAns && inputAns.trim().length > max) {
       return setError(
-        `Your answer is too long. It has to be less than ${MAX} words.`
+        `Your answer is too long. It has to be less than ${max} words.`
       );
     }
     setUpdating(true);
@@ -93,6 +110,37 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
       )
     );
   };
+  const _gradeActivi = () => {
+    if (!userId || !classroomId) {
+      return setError('Grade Failed');
+    }
+    setUpdating(true);
+    let score = Number.parseInt(_grade.reduce((a, b) => a + b) / _grade.length);
+    dispatch(
+      gradeActivi(
+        {
+          data: {
+            ...userActiviti,
+            status: checkScorePass(score, 100) ? 2 : -1,
+            description: `Your grade on this activity is ${score}%`,
+            gradeAt: new Date().getTime(),
+            comment: comment,
+            grade: _grade,
+          },
+          unitNumber: Number(unitNumber) - 1,
+          type: userActiviti.type,
+          userId,
+          classroomId,
+        },
+        (err, res) => {
+          setUpdating(false);
+          if (err) {
+            setError(err.error_message);
+          }
+        }
+      )
+    );
+  };
   return (
     <Box mt="22px" pb="22px">
       {![-1, 2].includes(status) ? (
@@ -105,7 +153,7 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
       ) : (
         ''
       )}
-      {[-1, 2].includes(status) ? (
+      {[-1, 2].includes(status) && !isGrade ? (
         <ContainerForm title="Your Grade">
           <Flex>
             <Text fontWeight="bold">Content grade: </Text>
@@ -127,7 +175,7 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
           </Flex>
           <Flex mt="12px">
             <Text fontWeight="bold">Teachers Comments:</Text>
-            <Text ml="4px">{userActiviti.comment || 'No comment'}</Text>
+            <Editor isView data={userActiviti.comment || 'No comment'} />
           </Flex>
         </ContainerForm>
       ) : (
@@ -198,7 +246,12 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
           ) : (
             ''
           )}
-          <Flex gap="12px" alignItems="center" flexWrap="wrap">
+          <Flex
+            gap="12px"
+            alignItems="center"
+            flexWrap="wrap"
+            justifyContent="flex-end"
+          >
             {choiced ? (
               <>
                 <Button
@@ -226,15 +279,76 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
       ) : (
         <>
           <Box border="1px solid #e3e3e3" pb="12px" mt="22px" mb="22px">
-            <TitleForm text={'Your answer'} mb="12px" />
+            <TitleForm
+              text={isGrade ? `Student's Answer` : 'Your answer'}
+              mb="12px"
+            />
             <Box px="22px" py="12px">
               <Text mt="12px">{ans}</Text>
             </Box>
           </Box>
-          <Button as={Link} to={`/unit/${unitNumber}`} colorScheme="blue">
-            GO TO UNIT MENU
-          </Button>
+          {isGrade ? (
+            ''
+          ) : (
+            <Flex justifyContent="flex-end">
+              <Button as={Link} to={`/unit/${unitNumber}`} colorScheme="blue">
+                GO TO UNIT MENU
+              </Button>
+            </Flex>
+          )}
         </>
+      )}
+      {isGrade ? (
+        <>
+          <ContainerForm title="Please grade the student's pronunciation">
+            {Grade.map((item, index) => {
+              return (
+                <Flex gap="12px" alignItems="center" key={index} mb="12px">
+                  <Text fontWeight="bold" whiteSpace="nowrap" w="200px">
+                    {item.text}:
+                  </Text>
+                  <Select
+                    maxW="300px"
+                    value={_grade[index]}
+                    onChange={(e) => {
+                      let __grade = [..._grade];
+                      __grade[index] = Number(e.target.value);
+                      console.log(__grade);
+                      setGrade(__grade);
+                    }}
+                  >
+                    <option value={0}>Chooice a grade</option>
+                    {Core.map((item, index) => (
+                      <option value={item.value} key={index}>
+                        {item.text}
+                      </option>
+                    ))}
+                  </Select>
+                </Flex>
+              );
+            })}
+          </ContainerForm>
+          <ContainerForm title="Comments to student">
+            <Box mt="22px" minH="150px">
+              <Editor value={comment} onChange={setComment} />
+            </Box>
+            <Flex mt="22px" alignItems="flex-end" justifyContent="flex-end">
+              <Button
+                isDisabled={
+                  !Boolean(_grade[0]) || !Boolean(_grade[1]) || updating
+                }
+                colorScheme="blue"
+                isLoading={updating}
+                loadingText={'Submit Grade'}
+                onClick={_gradeActivi}
+              >
+                Submit Grade
+              </Button>
+            </Flex>
+          </ContainerForm>
+        </>
+      ) : (
+        ''
       )}
     </Box>
   );

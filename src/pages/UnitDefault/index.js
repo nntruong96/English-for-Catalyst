@@ -9,6 +9,7 @@ import { useParams, Navigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import TitlePage from 'components/TitlePage';
 import Constants from 'util/Constants';
+import ContainerForm from 'components/ContainerForm';
 const TYPE = Constants.ACTIVITES_NAME;
 export default function UnitDefault(props) {
   let params = useParams();
@@ -17,26 +18,26 @@ export default function UnitDefault(props) {
     user: state.user,
     loggedIn: state.auth.loggedIn,
   }));
+  const { classRoom = {} } = user;
   let { unitNumber } = params;
   let index = Number(unitNumber - 1);
   const unit = units[index];
   if (!unit) {
     return <Navigate to="/" replace={true} />;
   }
+  const isDisabled = (type) => {
+    if ([6, 7].includes(type)) {
+      if (Number(type) === 6) {
+        return classRoom?.settings?.speaking?.isDisabled;
+      }
+      return classRoom?.settings?.writing?.isDisabled;
+    }
+    return false;
+  };
   return (
     <Box>
       <TitlePage title={`UNIT ${unitNumber}: ${unit.title}`} mt="22px" />
-      <Text
-        fontWeight="bold"
-        mt="22px"
-        fontSize="14px"
-        bg="blue.600"
-        color="white"
-        p="4px 12px"
-      >
-        Complete the following activities:
-      </Text>
-      <Box border="1px solid gray" p="22px">
+      <ContainerForm title=" Complete the following activities:">
         {unit.actitivies.map((item, _index) => {
           let checked = {};
           let userActitivies = user?.userUnits[index]?.actitivies[_index];
@@ -50,9 +51,15 @@ export default function UnitDefault(props) {
               sx={{
                 cursor: 'pointer',
               }}
-              to={`/unit/${index + 1}/${TYPE[item.type - 1]}`}
+              to={
+                isDisabled(item.type)
+                  ? `/unit/${index + 1}`
+                  : `/unit/${index + 1}/${TYPE[item.type - 1]}`
+              }
               fontWeight="bold"
               mt="12px"
+              opacity={isDisabled(item.type) ? 0.5 : 1}
+              pointerEvents={isDisabled(item.type) ? 'none' : ''}
             >
               {loggedIn ? (
                 <Checkbox {...checked} onChange={() => {}} mr="8px" />
@@ -79,7 +86,7 @@ export default function UnitDefault(props) {
             </Flex>
           );
         })}
-      </Box>
+      </ContainerForm>
     </Box>
   );
 }

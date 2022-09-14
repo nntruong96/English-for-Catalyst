@@ -24,6 +24,8 @@ const {
   REQUEST_CLASS_ROOM_FAILURE,
   REQUEST_CLASS_ROOM_SUCCESS,
   REQUEST_POST_COMMENT_SUCCESS,
+  REQUEST_GRADE_COMMENT_SUCCESS,
+  REQUEST_UPDATE_CLASSROOM_SUCCESS,
 } = userConstants;
 
 export const invalidAvatar = () => {
@@ -67,7 +69,6 @@ export const fetchUser = (history) => {
     return userClient
       .getCurrentUser()
       .then((res) => {
-        console.log('user', res.data);
         let user = res.data;
         dispatch(receiveUser(user));
       })
@@ -195,7 +196,6 @@ export const updateUser = (data, callback = () => {}) => {
     return userClient
       .updateCurrentUserUnit(data)
       .then((res) => {
-        console.log('res', res);
         if (res && res.data) {
           if (res.data.error_code) {
             throw new Error(res.data);
@@ -203,12 +203,31 @@ export const updateUser = (data, callback = () => {}) => {
           if (callback) {
             callback(null, res);
           }
-          console.log('res.data.userUnits', res.data.userUnits);
-          dispatch(success(res.data.userUnits));
+          successRes(
+            dispatch,
+            success,
+            res.data.userUnits,
+            {
+              show: true,
+              type: 'success',
+              title: 'Updated successfully.',
+            },
+            callback
+          );
         }
       })
       .catch((err) => {
-        errorRes(dispatch, null, err, null, callback);
+        errorRes(
+          dispatch,
+          null,
+          err,
+          {
+            show: true,
+            type: 'error',
+            title: 'Updat failed.',
+          },
+          callback
+        );
       });
   };
 };
@@ -247,6 +266,79 @@ export const postComment = (data, callback) => {
     return userClient
       .postComment(data)
       .then((res) => {
+        if (res && res.error_code) {
+          return errorRes(
+            dispatch,
+            null,
+            res.body,
+            {
+              show: true,
+              type: 'warning',
+              title: 'Post failed',
+            },
+            callback
+          );
+        }
+        successRes(
+          dispatch,
+          success,
+          res.body,
+          {
+            show: true,
+            type: 'success',
+            title: 'Post successfully',
+          },
+          callback
+        );
+      })
+      .catch((err) => {
+        errorRes(
+          dispatch,
+          null,
+          err,
+          {
+            show: true,
+            type: 'success',
+            title: 'Post successfully',
+          },
+          callback
+        );
+      });
+  };
+};
+
+export const getUserById = (userId, callback = () => {}) => {
+  let failure = () => {
+    return {
+      type: REQUEST_USER_FAILURE,
+    };
+  };
+  return (dispatch) => {
+    return userClient
+      .getUser(userId)
+      .then((res) => {
+        if (res.error_code) {
+          return callback(res.error_message);
+        }
+        callback(null, res.data);
+      })
+      .catch((err) => {
+        callback(err);
+        errorRes(dispatch, failure, err, null);
+      });
+  };
+};
+
+export const gradeActivi = (data, callback) => {
+  let success = ({ userUnits, studentId }) => ({
+    type: REQUEST_GRADE_COMMENT_SUCCESS,
+    userUnits,
+    studentId,
+  });
+  return (dispatch) => {
+    return userClient
+      .gradeActivi(data)
+      .then((res) => {
         console.log('res', res.body);
         if (res && res.error_code) {
           return errorRes(
@@ -264,16 +356,69 @@ export const postComment = (data, callback) => {
         successRes(
           dispatch,
           success,
-          res.body,
+          { userUnits: res.body, studentId: data.userId },
           {
             show: true,
             type: 'success',
+            title: 'Grade activiti successfully',
           },
           callback
         );
       })
       .catch((err) => {
-        errorRes(dispatch, null, err, null);
+        console.log('err', err);
+        errorRes(
+          dispatch,
+          null,
+          err,
+          {
+            show: true,
+            type: 'error',
+            title: 'Grade activiti failed',
+          },
+          callback
+        );
+      });
+  };
+};
+
+export const updateClassRoom = (data, callback = () => {}) => {
+  let success = (classRoom) => ({
+    type: REQUEST_UPDATE_CLASSROOM_SUCCESS,
+    classRoom,
+  });
+  return (dispatch) => {
+    return userClient
+      .updateClassRoom(data)
+      .then((res) => {
+        console.log('data', res.data);
+        if (res && res.error_code) {
+          return errorRes(
+            dispatch,
+            null,
+            res,
+            {
+              show: true,
+              type: 'warning',
+              title: 'Update Faild',
+            },
+            callback
+          );
+        }
+        successRes(
+          dispatch,
+          success,
+          res.data,
+          {
+            show: true,
+            type: 'success',
+            title: 'Updated successfully.',
+          },
+          callback
+        );
+      })
+      .catch((err) => {
+        errorRes(dispatch, null, err, null, callback);
       });
   };
 };

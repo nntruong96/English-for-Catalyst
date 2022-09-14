@@ -56,17 +56,26 @@ export const login = ({ email, password, isRemember }, callback = () => {}) => {
             res.body,
             {
               show: true,
-              type: 'warning',
+              type: 'error',
+              title: res.body.error_message,
             },
             callback
           );
         }
-
         successRes(dispatch, success, false, false, callback);
       })
       .catch((err) => {
-        callback(err);
-        return errorRes(dispatch, failure, err);
+        return errorRes(
+          dispatch,
+          failure,
+          err,
+          {
+            show: true,
+            type: 'error',
+            title: err.message,
+          },
+          callback
+        );
       });
   };
 };
@@ -136,6 +145,7 @@ export const resendEmail = (email, callback = () => {}) => {
             {
               show: true,
               type: 'warning',
+              title: 'Resend email failed, please try again.',
             },
             callback
           );
@@ -161,6 +171,8 @@ export const resendEmail = (email, callback = () => {}) => {
           err,
           {
             show: true,
+            type: 'warning',
+            title: 'Resend email failed, please try again.' + err.message,
           },
           callback
         );
@@ -190,6 +202,7 @@ export const forgotPassword = (email, callback = () => {}) => {
             {
               show: true,
               type: 'warning',
+              title: res.body.error_message,
             },
             callback
           );
@@ -200,6 +213,7 @@ export const forgotPassword = (email, callback = () => {}) => {
           null,
           {
             show: true,
+            type: 'success',
             title:
               'Success! Instructions to change your password have been sent to this email.',
           },
@@ -213,6 +227,8 @@ export const forgotPassword = (email, callback = () => {}) => {
           err,
           {
             show: true,
+            type: 'warning',
+            title: err.message,
           },
           callback
         );
@@ -239,36 +255,49 @@ export const resetPassword = ({ token, email, password }, callback) => {
       .then((res) => {
         if (res && res.body && res.body.error_code) {
           let errorMessage = res.body.error_message;
-          if (res.body.error_code === '11004' || res.body.error_code === 11004)
+          if (Number(res.body.error_code) === 11004)
             errorMessage =
               'This combo of email and password is out of date...try again?';
-          if (res.body.error_code === '11005' || res.body.error_code === 11005)
+          if (Number(res.body.error_code) === 11005)
             errorMessage =
-              'This reset link expired after 60 minutes...try again?';
+              'This reset link expired after 60 minutes. Please re-enter your email.';
 
-          errorRes(dispatch, failure, res.body, {
-            show: true,
-            type: 'warning',
-            message: errorMessage,
-          });
-          if (callback) {
-            console.log('ther');
-            callback({ error_message: errorMessage });
-          }
+          errorRes(
+            dispatch,
+            failure,
+            res.body,
+            {
+              show: true,
+              type: 'warning',
+              message: errorMessage,
+            },
+            callback
+          );
+
           return;
         }
-        successRes(dispatch, success);
-        if (callback) {
-          callback();
-        }
+        successRes(
+          dispatch,
+          success,
+          null,
+          {
+            type: 'succes',
+            title: 'Set passwork successfully',
+          },
+          callback
+        );
       })
       .catch((err) => {
-        if (callback) {
-          callback(err);
-        }
-        errorRes(dispatch, failure, err, {
-          show: true,
-        });
+        errorRes(
+          dispatch,
+          failure,
+          err,
+          {
+            show: true,
+            title: 'Set passwork failed',
+          },
+          callback
+        );
       });
   };
 };
@@ -290,7 +319,6 @@ export const verifyToken = (token, email, history) => {
       .verifyToken(token, email)
       .then((res) => {
         if (res && res.body && res.body.error_code) {
-          history.push('/auth/forgot');
           return errorRes(dispatch, failure, res.body, {
             show: true,
             type: 'warning',
@@ -312,7 +340,7 @@ export const logout = () => {
   return (dispatch) => {
     eraseCookie('access_token');
     dispatch(resetApp());
-    window.location.href = '/';
+    // window.location.href = '/';
   };
 };
 

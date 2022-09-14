@@ -70,6 +70,9 @@ export default class UserClient extends BaseClient {
   getUsers(params) {
     return super.get(['users'], params);
   }
+  getUser(userId) {
+    return super.get(['users', userId]);
+  }
   createUsers(params) {
     return super.post(['users'], params);
   }
@@ -84,13 +87,19 @@ export default class UserClient extends BaseClient {
   }
 
   /**
-   * Gets the current user
+   * Gets the classroom
    * @return {Promise} resolves if successfully get current user
    */
   getCurrentClassRoom() {
     return super.get(['user/classroom']);
   }
+  updateClassRoom(data) {
+    return super.put(['user/classroom'], data);
+  }
   postComment(data) {
     return super.post(['user/classroom/comment'], data);
+  }
+  gradeActivi(data) {
+    return super.post(['user/grade'], data);
   }
 }

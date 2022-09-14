@@ -3,20 +3,33 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React, { useState } from 'react';
-import { Box, Text, Button, Input, Flex } from '@chakra-ui/react';
+import { Box, Text, Select, Button, Input, Flex } from '@chakra-ui/react';
 import TitleWelComeActivity from 'components/TitleWelcomeActivity';
 import TitleForm from 'components/TitlteForm';
 import ButtonPlay from 'components/ButtonPlayAudio';
 import { isValidUrl } from 'util/Constants';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { updateUser } from 'redux/actions/userActions';
+import { updateUser, gradeActivi } from 'redux/actions/userActions';
 import ContainerForm from 'components/ContainerForm';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useNavigate } from 'react-router';
-export default function Speaking({ data, userActiviti = {}, unitNumber }) {
-  let { status = 0, audioUrl = '' } = userActiviti;
+import Editor from 'components/Editor';
+import { checkScorePass } from 'util/Constants';
+import Constants from 'util/Constants';
+const Pronunciation = Constants.SCORE;
+export default function Speaking({
+  data,
+  userActiviti = {},
+  unitNumber,
+  isGrade,
+  userId, //studentId
+  classroomId,
+}) {
+  let { status = 0, audioUrl = '', comment: _comment } = userActiviti;
   const [link, setLink] = useState(audioUrl);
+  const [comment, setComment] = useState(_comment || '');
+  const [grade, setGrade] = useState(userActiviti.grade || 0);
   const [isEdit, setIsEdit] = useState(false);
   const [updating, setUpdating] = useState(false);
   const dispatch = useDispatch();
@@ -64,8 +77,38 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
       )
     );
   };
+  const _gradeActivi = () => {
+    if (!userId || !classroomId) {
+      return setError('Grade Failed');
+    }
+    setUpdating(true);
+    dispatch(
+      gradeActivi(
+        {
+          data: {
+            ...userActiviti,
+            status: checkScorePass(grade, 100) ? 2 : -1,
+            description: `Your grade on this activity is ${grade}%`,
+            gradeAt: new Date().getTime(),
+            comment: comment,
+            grade,
+          },
+          unitNumber: Number(unitNumber) - 1,
+          type: userActiviti.type,
+          userId,
+          classroomId,
+        },
+        (err, res) => {
+          setUpdating(false);
+          if (err) {
+            setError(err.error_message);
+          }
+        }
+      )
+    );
+  };
   return (
-    <Box mt="22px">
+    <Box mt="22px" pb="22px">
       {status === 0 ? (
         <TitleWelComeActivity>
           Please listen to and practice the 5 sentences below. Then follow the
@@ -74,7 +117,7 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
       ) : (
         ''
       )}
-      {[-1, 2].includes(status) ? (
+      {[-1, 2].includes(status) && !isGrade ? (
         <ContainerForm title="Your Grade">
           <Flex>
             <Text fontWeight="bold">Grade: </Text>
@@ -82,7 +125,7 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
           </Flex>
           <Flex mt="12px">
             <Text fontWeight="bold">Teacher Comments:</Text>
-            <Text ml="4px">{userActiviti.comment || 'No comment'}</Text>
+            <Editor isView data={userActiviti.comment || 'No comment'} />
           </Flex>
         </ContainerForm>
       ) : (
@@ -123,7 +166,7 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
             ''
           )}
         </Flex>
-      ) : (
+      ) : !isGrade ? (
         <>
           <Flex gap="12px" alignItems="center">
             <Text fontWeight="bold" whiteSpace="nowrap">
@@ -133,7 +176,7 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
               {audioUrl}
             </Text>
           </Flex>
-          <Flex gap="12px" mt="22px">
+          <Flex gap="12px" mt="22px" justifyContent="flex-end">
             <Button as={Link} to={`/unit/${unitNumber}`} colorScheme="blue">
               GO TO UNIT MENU
             </Button>
@@ -141,6 +184,54 @@ export default function Speaking({ data, userActiviti = {}, unitNumber }) {
               EDIT LINK
             </Button> */}
           </Flex>
+        </>
+      ) : (
+        <>
+          <ContainerForm title="Student's Alt Link (MP3, MP4, or other)">
+            <Flex gap="12px" alignItems="center">
+              <Text fontWeight="bold" whiteSpace="nowrap">
+                Link:
+              </Text>
+              <Text color="blue" as="a" href={audioUrl} target="_blank">
+                {audioUrl}
+              </Text>
+            </Flex>
+          </ContainerForm>
+          <ContainerForm title="Please grade the student's pronunciation">
+            <Flex gap="12px" alignItems="center">
+              <Text fontWeight="bold" whiteSpace="nowrap">
+                Pronunciation
+              </Text>
+              <Select
+                maxW="300px"
+                value={grade}
+                onChange={(e) => setGrade(Number(e.target.value))}
+              >
+                <option value={0}>Chooice a grade</option>
+                {Pronunciation.map((item, index) => (
+                  <option value={item.value} key={index}>
+                    {item.text}
+                  </option>
+                ))}
+              </Select>
+            </Flex>
+          </ContainerForm>
+          <ContainerForm title="Comments to student">
+            <Box mt="22px" minH="150px">
+              <Editor value={comment} onChange={setComment} />
+            </Box>
+            <Flex mt="22px" alignItems="flex-end" justifyContent="flex-end">
+              <Button
+                isDisabled={!Boolean(grade) || updating}
+                isLoading={updating}
+                loadingText="Submit Grade"
+                onClick={_gradeActivi}
+                colorScheme="blue"
+              >
+                Submit Grade
+              </Button>
+            </Flex>
+          </ContainerForm>
         </>
       )}
     </Box>

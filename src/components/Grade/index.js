@@ -41,17 +41,32 @@ export default function Grade({
   hideActivites,
   hideGrading,
   hideTitle,
+  grade,
 }) {
   const [teacherGrade, setTeacherGrade] = useState(0);
   const [computerGrade, setComputerGrade] = useState(0);
   const [numberUnitComplete, setNumberUnitcomplete] = useState(0);
   const [units, setUnits] = useState([]);
-  const { rootUnits } = useShallowEqualSelector((state) => {
+  const { rootUnits, userInfo } = useShallowEqualSelector((state) => {
     return {
       rootUnits: state.documents.units,
+      userInfo: state.user.user,
     };
   });
   useEffect(() => {
+    if (grade) {
+      let {
+        computerGrade,
+        teacherGrade,
+        numberUnitComplete: _numberUnitComplete,
+        units: _units,
+      } = grade;
+      setUnits(_units);
+      setNumberUnitcomplete(_numberUnitComplete);
+      setTeacherGrade(teacherGrade);
+      setComputerGrade(computerGrade);
+      return;
+    }
     let {
       computerGrade,
       teacherGrade,
@@ -63,7 +78,7 @@ export default function Grade({
     setNumberUnitcomplete(_numberUnitComplete);
     setTeacherGrade(teacherGrade);
     setComputerGrade(computerGrade);
-  }, [userUnits, rootUnits]);
+  }, [userUnits, rootUnits, grade]);
   const calOverallGrade = () => {
     if (teacherGrade && computerGrade) {
       return Number.parseInt((teacherGrade + computerGrade) / 2);
@@ -114,7 +129,6 @@ export default function Grade({
 
     return 0;
   };
-  console.log('units', units);
   return (
     <Box mt="22px">
       {!hideTitle ? (
@@ -254,7 +268,15 @@ export default function Grade({
                                 as={Link}
                                 color="blue"
                                 textDecor="underline"
-                                to={`/unit/${index + 1}/${TYPE[item.type - 1]}`}
+                                to={
+                                  Number(userInfo.role) === 2
+                                    ? `/unit/${index + 1}/${
+                                        TYPE[item.type - 1]
+                                      }`
+                                    : `/activiGrade/${index + 1}/${
+                                        TYPE[item.type - 1]
+                                      }/${user._id}`
+                                }
                                 fontSize="12px"
                               >
                                 {

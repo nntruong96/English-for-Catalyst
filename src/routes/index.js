@@ -12,6 +12,8 @@ import Activities from 'pages/Activities';
 import Profile from 'pages/Profile';
 import Grade from 'pages/Grade';
 import ClassRoom from 'pages/ClassRoom';
+import ViewProfile from 'pages/ViewProfile';
+import GradeActivite from 'pages/GradeActiviti';
 const indexRoutes = [
   {
     path: `*`,
@@ -54,6 +56,16 @@ const indexRoutes = [
   {
     path: 'myclass',
     component: <ClassRoom />,
+    requireLogin: true,
+  },
+  {
+    path: 'view/:id',
+    component: <ViewProfile />,
+    requireLogin: true,
+  },
+  {
+    path: 'activiGrade/:unitNumber/:activityName/:id',
+    component: <GradeActivite />,
     requireLogin: true,
   },
 ];

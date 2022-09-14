@@ -52,7 +52,10 @@ export default function SetPassword(props) {
       resetPassword(data, (err, res) => {
         setUpdating(false);
         if (err) {
-          return setError(err.error_message);
+          if (Number(err.error_code) === 11005) {
+            navigate('/auth/forgot');
+          }
+          return;
         }
         navigate('/auth/login');
       })
@@ -68,7 +71,7 @@ export default function SetPassword(props) {
   };
   return (
     <Container maxW="container.sm" centerContent pt="22px">
-      <Flex direction="column" minW="350px" maxW="100%">
+      <Flex direction="column" w="350px" maxW="100%">
         <Text fontSize="1.66em" color="blue.400" textAlign="center" mb="22px">
           Set Password
         </Text>
@@ -121,9 +124,7 @@ export default function SetPassword(props) {
               </InputRightElement>
             </InputGroup>
           </Flex>
-          <Text color="red" fontSize="12px" mt="12px">
-            {error}
-          </Text>
+
           <Flex alignItems="center" mt="22px">
             <Button
               colorScheme="blue"
@@ -137,6 +138,9 @@ export default function SetPassword(props) {
               Submit
             </Button>
           </Flex>
+          {/* <Text color="red" fontSize="12px" mt="12px">
+            {error}
+          </Text> */}
         </Box>
       </Flex>
     </Container>

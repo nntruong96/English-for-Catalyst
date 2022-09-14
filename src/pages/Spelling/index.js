@@ -27,14 +27,17 @@ const STATUS = {
 };
 
 export default function Listening({ data, unitNumber, userActiviti = {} }) {
-  let { countSubmit = 1, status = 0, data: { ans = [] } = {} } = userActiviti;
+  let { countSubmit = 0, status = 0, data: { ans = [] } = {} } = userActiviti;
   const ansRender = ans; //ansRender just will be test
   const [isSubmit, setIsSubmit] = useState(false);
   const [ansStatus, setAnsStatus] = useState(true);
   const [showAns, setShowAns] = useState(false);
   const [updating, setUpdating] = useState(false);
   const dispatch = useDispatch();
-  const loggedIn = useShallowEqualSelector((state) => state.auth.loggedIn);
+  const { settings = {}, loggedIn } = useShallowEqualSelector((state) => ({
+    loggedIn: state.auth.loggedIn,
+    settings: state.user.classRoom?.settings,
+  }));
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const grenarateIndex = (defaultIndex = -1) => {
@@ -81,6 +84,7 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
         userAns: _ans,
         countSubmit: countSubmit + 1,
       });
+      //true ans
       dispatch(
         updateUser(
           {
@@ -124,7 +128,7 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
           data: {
             ...userActiviti,
             description: `Your grade on this activity is ${percentage}%.`,
-            countSubmit: userActiviti.countSubmit + 1,
+            countSubmit: countSubmit + 1,
             grade: percentage,
             updateAt: new Date().getTime(),
           },
@@ -210,6 +214,7 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
     userAns: ansRender,
     countSubmit,
   });
+  console.log(data?.data[index]);
   return (
     <Box mt="22px" pb="22px">
       <TitleWelComeActivity>
@@ -273,7 +278,7 @@ export default function Listening({ data, unitNumber, userActiviti = {} }) {
             ) : (
               ''
             )}
-            {percentage && percentage !== 100 ? (
+            {percentage && percentage !== 100 && !settings.restart ? (
               <Button onClick={onRedu}>Restart</Button>
             ) : (
               ''

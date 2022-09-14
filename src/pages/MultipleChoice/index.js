@@ -13,7 +13,12 @@ import { useDispatch } from 'react-redux';
 import { checkScorePass } from 'util/Constants';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useNavigate } from 'react-router';
-export default function MultipleChoice({ data, unitNumber, activiti = {} }) {
+export default function MultipleChoice({
+  data,
+  unitNumber,
+  activiti = {},
+  isGrade,
+}) {
   const { data: { ans = [] } = {}, status = 0 } = activiti;
   const [ansRender, setAns] = useState(ans);
   const [updating, setUpdating] = useState(false);
@@ -131,32 +136,36 @@ export default function MultipleChoice({ data, unitNumber, activiti = {} }) {
       <Text mt="12px" color="red">
         {error}
       </Text>
-      <Flex mt="22px" gap="22">
-        {status === 0 ? (
-          <>
-            <Button
-              onClick={onSubmit}
-              isDisabled={isDisabled()}
-              colorScheme="blue"
-            >
-              Submit
-            </Button>
-            <Button as={Link} to={`/unit/${unitNumber}`}>
-              CANCEL
-            </Button>
-          </>
-        ) : (
-          <>
-            {' '}
-            <Button as={Link} to={`/unit/${unitNumber}`} colorScheme="blue">
-              GO TO UNIT MENU
-            </Button>
-            <Button colorScheme="red" onClick={onRedu}>
-              REDO
-            </Button>
-          </>
-        )}
-      </Flex>
+      {isGrade ? (
+        ''
+      ) : (
+        <Flex mt="22px" gap="22" justifyContent="flex-end">
+          {status === 0 ? (
+            <>
+              <Button
+                onClick={onSubmit}
+                isDisabled={isDisabled()}
+                colorScheme="blue"
+              >
+                Submit
+              </Button>
+              <Button as={Link} to={`/unit/${unitNumber}`}>
+                CANCEL
+              </Button>
+            </>
+          ) : (
+            <>
+              {' '}
+              <Button as={Link} to={`/unit/${unitNumber}`} colorScheme="blue">
+                GO TO UNIT MENU
+              </Button>
+              <Button colorScheme="red" onClick={onRedu}>
+                REDO
+              </Button>
+            </>
+          )}
+        </Flex>
+      )}
     </Box>
   );
 }

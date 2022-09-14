@@ -8,15 +8,19 @@ export const calculatePercentageScoreListening = ({
   userAns,
   countSubmit,
 }) => {
-  console.log('calculatePercentageScoreListening', ans, userAns, countSubmit);
   let correct = 0;
   ans.forEach((item, index) => {
     if (item === userAns[index]) {
       correct++;
     }
   });
-  console.log('correct', correct);
   return Math.floor((correct / countSubmit) * 100);
+};
+export const isNotStudent = (user) => {
+  return Number(user.role) !== 2;
+};
+export const deepClone = (data) => {
+  return JSON.parse(JSON.stringify(data));
 };
 export const isValidUrl = (urlString) => {
   var urlPattern = new RegExp(
@@ -38,6 +42,22 @@ export const checkScorePass = (countAnsCorrect, numberQuestion) => {
     return true;
   }
   return false;
+};
+
+export const compact = (string = '', lg = 20, position) => {
+  if (string?.length > lg) {
+    if (position === 'end') {
+      return string.substr(0, lg) + '...';
+    }
+
+    return (
+      string.substring(0, lg / 2) +
+      '...' +
+      string.substring(string.length - lg / 2, string.length)
+    );
+  }
+
+  return string;
 };
 export const getName = (user = { firstName: '', lastName: '' }) => {
   return user.firstName + ' ' + user.lastName;
@@ -137,5 +157,13 @@ const Constants = {
     speaking: 'Speaking Activity',
     wringting: 'Wringting Activity',
   },
+  SCORE: [
+    { text: 'A+(100)', value: 100 },
+    { text: 'A(90)', value: 90 },
+    { text: 'B(80)', value: 80 },
+    { text: 'C(70)', value: 70 },
+    { text: 'D(60)', value: 60 },
+    { text: 'F(50)', value: 50 },
+  ],
 };
 export default Constants;

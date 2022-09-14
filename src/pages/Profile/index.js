@@ -3,24 +3,16 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React, { useState } from 'react';
-import { Box, Text, Flex, Button, Icon } from '@chakra-ui/react';
+import { Box, Flex, Button, Icon } from '@chakra-ui/react';
 import TitlePage from 'components/TitlePage';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useNavigate } from 'react-router';
 import ModalEditProfile from './ModalEditProfile';
 import ModalChangePassword from './ModalChangePassword';
 import { MdVpnKey, MdEdit } from 'react-icons/md';
-import ContainerForm from 'components/ContainerForm';
 import Grade from 'components/Grade';
-const KEYS = ['role', 'firstName', 'lastName', 'email', '_id'];
-const LABELS = {
-  role: 'Account Type',
-  firstName: 'First Name',
-  lastName: 'Last Name',
-  email: 'Email Address',
-  _id: 'User Id',
-};
-const ACCOUNT_TYPE = ['Admin', 'Teacher', 'Student'];
+import UserInformation from 'components/UserInformation';
+
 export default function Profile(props) {
   const { userInfo, userUnits } = useShallowEqualSelector((state) => {
     return { userInfo: state.user.user, userUnits: state.user.userUnits };
@@ -50,22 +42,7 @@ export default function Profile(props) {
           CHANGE PASSWORD
         </Button>
       </Flex>
-      <ContainerForm title="User Information">
-        {KEYS.map((key, index) => {
-          return (
-            <Flex gap="22px" key={index} py="12px">
-              <Text w="30%" maxW="300px" minW="120px" fontWeight="bold">
-                {LABELS[key]}:
-              </Text>
-              <Text>
-                {key === 'role'
-                  ? ACCOUNT_TYPE[Number(userInfo[key])]
-                  : userInfo[key]}
-              </Text>
-            </Flex>
-          );
-        })}
-      </ContainerForm>
+      <UserInformation userInfo={userInfo}></UserInformation>
       {/* <ContainerForm title="Classroom"></ContainerForm> */}
       <Grade
         user={userInfo}

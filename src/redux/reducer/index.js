@@ -3,6 +3,7 @@ import auth from './authReducers';
 import alert from './alertReducers';
 import user from './userReducers';
 import documents from './documentsReducers';
-const rootReducer = combineReducers({ auth, documents, alert, user });
+import users from './usersReducers';
+const rootReducer = combineReducers({ auth, documents, alert, user, users });
 
 export default rootReducer;

@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 import Input from 'components/Input';
-import { authActions } from 'redux/actions';
+import { authActions, userActions } from 'redux/actions';
 import { useDispatch } from 'react-redux';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 export default function Register(props) {
@@ -52,14 +52,29 @@ export default function Register(props) {
   };
   const submit = () => {
     setUpdating(true);
+    setError('');
     dispatch(
       authActions.register(data, (err, res) => {
         if (!err) {
           setSended(true);
-        } else {
-          setError(err.error_message);
+        }
+        // else {
+        //   setError(err.error_message);
+        // }
+        setUpdating(false);
+      })
+    );
+  };
+  const resend = () => {
+    setUpdating(true);
+    dispatch(
+      authActions.resendEmail(data.email, (err) => {
+        if (err) {
+          setUpdating(false);
+          return setError(err.error_message);
         }
         setUpdating(false);
+        setError('');
       })
     );
   };
@@ -100,6 +115,16 @@ export default function Register(props) {
                 w="full"
               >
                 Back to Login
+              </Button>
+              <Button
+                mt="12px"
+                w="full"
+                onClick={resend}
+                isDisabled={updating}
+                isLoading={updating}
+                loadingText="Resend Email"
+              >
+                Resend Email
               </Button>
             </Box>
           </>

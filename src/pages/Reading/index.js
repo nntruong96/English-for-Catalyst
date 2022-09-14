@@ -38,6 +38,7 @@ export default function Reading({
   ans = [],
   unitNumber,
   activiti = {},
+  isGrade,
 }) {
   const [dataRender, setData] = useState({});
   const [vocabularySelected, setVocabulary] = useState();
@@ -238,9 +239,13 @@ export default function Reading({
       <Text mt="12px" color="red">
         {error}
       </Text>
-      <Flex mt="22px" gap="22">
-        {renderButtons()}
-      </Flex>
+      {isGrade ? (
+        ''
+      ) : (
+        <Flex mt="22px" gap="22" justifyContent="flex-end">
+          {renderButtons()}
+        </Flex>
+      )}
       <ModalVocabulary
         isOpen={isOpen}
         onClose={onClose}

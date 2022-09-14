@@ -35,7 +35,6 @@ export default function ForgotPassword() {
     });
   };
   const submit = () => {
-    console.log('submit', data);
     setUpdating(true);
     setError('');
     dispatch(

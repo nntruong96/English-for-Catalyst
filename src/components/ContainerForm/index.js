@@ -9,11 +9,11 @@ const containerStyle = {
   mt: '22px',
   border: '1px solid #e3e3e3',
 };
-export default function Index({ children, title }) {
+export default function Index({ children, title, contentStyle }) {
   return (
     <Box {...containerStyle}>
       <Title text={title} />
-      <Box p="12px" overflow="auto">
+      <Box p="12px" overflow="auto" {...contentStyle}>
         {children}
       </Box>
     </Box>

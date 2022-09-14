@@ -2,44 +2,44 @@ import { alertConstants } from '../constants';
 
 const { SUCCESS, ERROR, WARNING, HIDE, INFO } = alertConstants;
 
-export const success = (title, subtitle, autoHideTime) => {
-    return {
-        type: SUCCESS,
-        title,
-        subtitle,
-        autoHideTime,
-    };
+export const success = (title, message, autoHideTime) => {
+  return {
+    type: SUCCESS,
+    title,
+    message,
+    autoHideTime,
+  };
 };
 
-export const error = (title, subtitle, autoHideTime) => {
-    return {
-        type: ERROR,
-        title,
-        subtitle,
-        autoHideTime,
-    };
+export const error = (title, message, autoHideTime) => {
+  return {
+    type: ERROR,
+    title,
+    message,
+    autoHideTime,
+  };
 };
 
-export const clear = (title, subtitle) => {
-    return { type: HIDE, title, subtitle };
+export const clear = () => {
+  return { type: HIDE, title: '', message: '' };
 };
 
-export const warning = (title, subtitle, action, autoHideTime) => {
-    return {
-        type: WARNING,
-        title,
-        subtitle,
-        action,
-        autoHideTime,
-    };
+export const warning = (title, message, action, autoHideTime) => {
+  return {
+    type: WARNING,
+    title,
+    message,
+    action,
+    autoHideTime,
+  };
 };
 
-export const info = (title, subtitle, action, autoHideTime) => {
-    return {
-        type: INFO,
-        title,
-        subtitle,
-        action,
-        autoHideTime,
-    };
+export const info = (title, message, action, autoHideTime) => {
+  return {
+    type: INFO,
+    title,
+    message,
+    action,
+    autoHideTime,
+  };
 };

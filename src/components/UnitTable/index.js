@@ -40,14 +40,14 @@ export default function Index(props) {
       <Table variant="simple">
         <Thead>
           <Tr>
-            {HEADER.map((item, index) => (
+            {HEADER.map((item) => (
               <Th key={item.text}>{item.text}</Th>
             ))}
           </Tr>
         </Thead>
 
         <Tbody>
-          {units.map((item, index) => {
+          {units?.map((item, index) => {
             return (
               <Tr
                 key={index}

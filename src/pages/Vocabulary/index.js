@@ -11,7 +11,12 @@ import { updateUser } from 'redux/actions/userActions';
 import { useDispatch } from 'react-redux';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useNavigate } from 'react-router';
-export default function Vocabulary({ data, unitNumber, activiti = {} }) {
+export default function Vocabulary({
+  data,
+  unitNumber,
+  activiti = {},
+  isGrade,
+}) {
   const dispatch = useDispatch();
   const loggedIn = useShallowEqualSelector((state) => state.auth.loggedIn);
   const [updating, setUpdating] = useState(false);
@@ -93,8 +98,10 @@ export default function Vocabulary({ data, unitNumber, activiti = {} }) {
       <Text mt="12px" color="red">
         {error}
       </Text>
-      <Flex mt="22px" gap="22">
-        {status === 0 ? (
+      <Flex mt="22px" gap="22" justifyContent="flex-end">
+        {isGrade ? (
+          ''
+        ) : status === 0 ? (
           <>
             <Button
               onClick={onSubmit}
@@ -111,7 +118,6 @@ export default function Vocabulary({ data, unitNumber, activiti = {} }) {
           </>
         ) : (
           <>
-            {' '}
             <Button as={Link} to={`/unit/${unitNumber}`} colorScheme="blue">
               GO TO UNIT MENU
             </Button>

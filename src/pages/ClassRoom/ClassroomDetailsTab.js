@@ -8,8 +8,9 @@ import moment from 'moment';
 import UserName from 'components/UserName';
 const style = {
   gap: '4px',
+  mt: '12px',
 };
-export default function Index({ classRoom }) {
+export default function Index({ classRoom, user }) {
   let { teachers = [{}], name, createAt } = classRoom;
   return (
     <Box>
