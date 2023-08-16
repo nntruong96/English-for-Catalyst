@@ -5,7 +5,7 @@
 import React from 'react';
 import { Box, Text, Flex, Checkbox } from '@chakra-ui/react';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
-import { useParams, Navigate } from 'react-router';
+import { useParams, useNavigate, Navigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import TitlePage from 'components/TitlePage';
 import Constants from 'util/Constants';
@@ -13,6 +13,7 @@ import ContainerForm from 'components/ContainerForm';
 const TYPE = Constants.ACTIVITES_NAME;
 export default function UnitDefault(props) {
   let params = useParams();
+  const navigate = useNavigate();
   const { units, user, loggedIn } = useShallowEqualSelector((state) => ({
     units: state.documents.units,
     user: state.user,
@@ -21,10 +22,10 @@ export default function UnitDefault(props) {
   const { classRoom = {} } = user;
   let { unitNumber } = params;
   let index = Number(unitNumber - 1);
-  const unit = units[index];
-  if (!unit) {
-    return <Navigate to="/" replace={true} />;
-  }
+  const unit = units[index] || {};
+  // if (!unit) {
+  //   return <Navigate to="/" replace={true} />;
+  // }
   const isDisabled = (type) => {
     if ([6, 7].includes(type)) {
       if (Number(type) === 6) {
@@ -36,9 +37,13 @@ export default function UnitDefault(props) {
   };
   return (
     <Box>
-      <TitlePage title={`UNIT ${unitNumber}: ${unit.title}`} mt="22px" />
+      <TitlePage
+        title={`UNIT ${unitNumber}: ${unit.title}`}
+        mt="22px"
+        onBack={() => navigate('/')}
+      />
       <ContainerForm title=" Complete the following activities:">
-        {unit.actitivies.map((item, _index) => {
+        {unit?.actitivies?.map((item, _index) => {
           let checked = {};
           let userActitivies = user?.userUnits[index]?.actitivies[_index];
           if ([-1, 2].includes(userActitivies?.status)) {

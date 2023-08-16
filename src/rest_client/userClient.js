@@ -96,10 +96,29 @@ export default class UserClient extends BaseClient {
   updateClassRoom(data) {
     return super.put(['user/classroom'], data);
   }
+
+  removeUser({ classRoomId, studentId }) {
+    return super.delete(['user', classRoomId, studentId]);
+  }
   postComment(data) {
     return super.post(['user/classroom/comment'], data);
   }
+  updateComment(data) {
+    return super.put(['user/classroom/comment'], data);
+  }
+  removeComment({ classRoomId, commentId }, fillter) {
+    return super.delete(['user/comment', classRoomId, commentId], fillter);
+  }
   gradeActivi(data) {
     return super.post(['user/grade'], data);
+  }
+  getGradeActivites(id, fillter) {
+    return super.get([`user/activites/${id}`], fillter);
+  }
+  getComments(id, fillter) {
+    return super.get([`user/comments/${id}`], fillter);
+  }
+  getStudents(id, fillter) {
+    return super.get([`user/students/${id}`], fillter);
   }
 }

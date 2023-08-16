@@ -10,7 +10,7 @@ const { FETCH_DOCUMENTS, FETCH_DOCUMENTS_SUCCESS, FETCH_DOCUMENTS_FAILD } =
 function initialState() {
   return {
     units: [],
-    isFetching: false,
+    isFetching: true,
     hasFetched: false,
   };
 }

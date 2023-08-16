@@ -45,9 +45,9 @@ export default function Index({
   let { unitNumber, activityName } = params;
   let index = Number(unitNumber - 1);
   const unit = units[index];
-  if (!unit) {
-    return <Navigate to="/" replace={true} />;
-  }
+  // if (!unit) {
+  //   return <Navigate to="/" replace={true} />;
+  // }
   const getUserUnitRender = () =>
     isGrade ? studentUnits[index] : userUnits[index];
   const getUserActiviti = () => {
@@ -67,7 +67,6 @@ export default function Index({
         return userUnit?.actitivies[5];
       case Constants.ACTIVITES_NAME[6]:
         return userUnit?.actitivies[6];
-
       default:
         return <div>doi xiu dang code</div>;
     }

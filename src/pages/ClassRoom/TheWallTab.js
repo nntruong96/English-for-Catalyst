@@ -2,23 +2,66 @@
  *
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
-import React, { useState } from 'react';
-import { Box, Text, Flex, Button, Textarea } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
+import { Box, Text, Flex, Button } from '@chakra-ui/react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { postComment } from 'redux/actions/userActions';
+import { postComment, getComments } from 'redux/actions/userActions';
 import { useDispatch } from 'react-redux';
-import { getName } from 'util/Constants';
-import moment from 'moment';
-import UserName from 'components/UserName';
+import { deepClone } from 'util/Constants';
+import Comment from 'components/Comment';
+import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
+import Pagination from 'components/Pagination';
 export default function Index({ classRoom, user }) {
   const [value, setValue] = useState('');
+  const [updating, setUpdating] = useState(false);
+  const [requesting, setRequesting] = useState(false);
+  const { comments } = useShallowEqualSelector((state) => ({
+    comments: state.user.comments,
+  }));
+  const { data, pageSize, pageNumber, hasFetched, total } = comments;
   const dispatch = useDispatch();
+  useEffect(() => {
+    if (!hasFetched) {
+      setRequesting(true);
+      dispatch(
+        getComments(
+          {
+            classroomId: classRoom._id,
+            pageSize,
+            pageNumber,
+          },
+          () => {
+            setRequesting(false);
+          }
+        )
+      );
+    }
+  }, [
+    hasFetched,
+    setRequesting,
+    classRoom._id,
+    pageSize,
+    pageNumber,
+    dispatch,
+  ]);
+  const handlePageClick = (pageNumber) => {
+    if (requesting) {
+      return;
+    }
+    setRequesting(true);
+    dispatch(
+      getComments({ classroomId: classRoom._id, pageNumber, pageSize }, () => {
+        setRequesting(false);
+      })
+    );
+  };
   const onInputChange = (e, editor) => {
     let value = editor.getData();
     setValue(value);
   };
   const submit = () => {
+    setUpdating(true);
     dispatch(
       postComment(
         {
@@ -26,67 +69,22 @@ export default function Index({ classRoom, user }) {
           userId: user._id,
           crateAt: Date.now(),
           classRoomId: classRoom._id,
+          pageNumber,
+          pageSize,
         },
         (err, res) => {
           if (!err) {
             setValue('');
           }
+          setUpdating(false);
         }
       )
     );
   };
-  const { comments } = classRoom;
+  let _comments = deepClone(data);
+  _comments.sort((a, b) => b.createAt - a.createAt);
   return (
     <Box>
-      <Flex gap="22px" flexDirection="column">
-        {!comments.length ? (
-          <Text>No post</Text>
-        ) : (
-          comments.map((comment, index) => {
-            let isTeacher = false;
-            let userData = classRoom.students.find(
-              (item) => item._id === comment.userId
-            );
-
-            if (!userData) {
-              userData = classRoom.teachers.find(
-                (item) => item._id === comment.userId
-              );
-              isTeacher = true;
-            }
-            if (!userData) {
-              return null;
-            }
-            return (
-              <Box
-                key={index}
-                border="1px solid #e3e3e3"
-                p="12px"
-                bg="#F0F2F5"
-                borderRadius="20px"
-              >
-                <UserName fontWeight="bold" user={userData}>
-                  <Text
-                    as="span"
-                    color={isTeacher ? 'blue' : ''}
-                    fontWeight="normal"
-                    ml="4px"
-                  >
-                    {isTeacher ? '(teacher)' : '(student)'}
-                  </Text>
-                </UserName>
-                <Text
-                  dangerouslySetInnerHTML={{ __html: comment.message }}
-                ></Text>
-                <Text fontSize="10px" mt="8px">
-                  Post on{' '}
-                  {moment(comment.createAt).format('MMMM DD, YYYY, hh:mm:ss')}
-                </Text>
-              </Box>
-            );
-          })
-        )}
-      </Flex>
       <Box mt="22px">
         <CKEditor
           editor={ClassicEditor}
@@ -102,18 +100,63 @@ export default function Index({ classRoom, user }) {
               'undo',
               'redo',
             ],
-            ckfinder: {
-              uploadUrl: '/api/v1/settings/uploadImage',
-            },
+            // ckfinder: {
+            //   uploadUrl: '/api/v1/settings/uploadImage',
+            // },
           }}
           onChange={onInputChange}
           // disabled={disabled}
         />
       </Box>
-      <Flex justifyContent="flex-end" w="full">
-        <Button colorScheme="blue" mt="12px" onClick={submit}>
+      <Flex justifyContent="flex-end" w="full" mb="22px">
+        <Button
+          colorScheme="blue"
+          mt="12px"
+          onClick={submit}
+          isDisabled={updating}
+          isLoading={updating}
+          loadingText="POST"
+        >
           POST
         </Button>
+      </Flex>
+      <Flex justifyContent="flex-end" mb="22px">
+        <Pagination
+          onPageChange={handlePageClick}
+          pageSize={pageSize}
+          total={total}
+          pageNumber={pageNumber}
+          disabled={requesting}
+        />
+      </Flex>
+      <Flex gap="22px" flexDirection="column">
+        {!_comments.length ? (
+          <Text>No post</Text>
+        ) : (
+          _comments.map((comment, index) => {
+            let isOwner = false,
+              isTeacher =
+                classRoom.teachers.findIndex(
+                  (item) => item._id === comment.userId
+                ) >= 0
+                  ? true
+                  : false;
+            isOwner = comment.userId === user._id;
+            return (
+              <Comment
+                key={comment._id}
+                isTeacher={isTeacher}
+                comment={comment}
+                canEdit={isOwner}
+                canDelete={isOwner || [0, 1].includes(user.role)}
+                user={user}
+                classRoom={classRoom}
+                pageSize={pageSize}
+                pageNumber={pageNumber}
+              />
+            );
+          })
+        )}
       </Flex>
     </Box>
   );

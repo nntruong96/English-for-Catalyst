@@ -19,7 +19,7 @@ export const calculatePercentageScoreListening = ({
 export const isNotStudent = (user) => {
   return Number(user.role) !== 2;
 };
-export const deepClone = (data) => {
+export const deepClone = (data = {}) => {
   return JSON.parse(JSON.stringify(data));
 };
 export const isValidUrl = (urlString) => {

@@ -19,8 +19,14 @@ const {
   UPDATE_USER_SETTING,
   REQUEST_CLASS_ROOM_SUCCESS,
   REQUEST_POST_COMMENT_SUCCESS,
-  REQUEST_GRADE_COMMENT_SUCCESS,
+  REQUEST_GRADE_SUCCESS,
   REQUEST_UPDATE_CLASSROOM_SUCCESS,
+  REQUEST_REMOVE_USER_SUCCESS,
+  REQUEST_UPDATE_COMMENT_SUCCESS,
+  REQUEST_REMOVE_COMMENT_SUCCESS,
+  REQUEST_GET_GRADE_ACTIVITIES_SUCCESS,
+  REQUEST_GET_COMMENTS_SUCCESS,
+  REQUEST_GET_STUDENTS_SUCCESS,
 } = userConstants;
 
 const initialState = {
@@ -34,6 +40,27 @@ const initialState = {
   user: {},
   userUnits: [],
   classRoom: {},
+  gradeActivities: {
+    total: 0,
+    pageSize: 10,
+    pageNumber: 0,
+    data: [],
+    hasFetched: false,
+  },
+  comments: {
+    total: 0,
+    pageSize: 10,
+    pageNumber: 0,
+    data: [],
+    hasFetched: false,
+  },
+  students: {
+    total: 0,
+    pageSize: 10,
+    pageNumber: 0,
+    data: [],
+    hasFetched: false,
+  },
 };
 
 const user = createReducer(initialState, {
@@ -100,22 +127,71 @@ const user = createReducer(initialState, {
     return state;
   },
   [REQUEST_POST_COMMENT_SUCCESS]: (state, action) => {
-    state.classRoom.comments = action.comments;
+    state.comments = { ...state.comments, ...action.comments };
     return state;
   },
-  [REQUEST_GRADE_COMMENT_SUCCESS]: (state, action) => {
-    let { userUnits, studentId } = action;
-    let studentIndex = state.classRoom.students.findIndex(
-      (item) => item._id === studentId
-    );
-    if (studentIndex >= 0) {
-      state.classRoom.students[studentIndex].userUnits = userUnits;
-    }
+  [REQUEST_GRADE_SUCCESS]: (state, action) => {
+    // let { activiti, studentId } = action;
+    // state.gradeActivities.data = state.gradeActivities.data.filter((item) => {
+    //   return (
+    //     item.type === activiti &&
+    //     Number(studentId) === Number(item.userInfo._id)
+    //   );
+    // });
+    // console.log(state.gradeActivities.data);
     return state;
   },
   [REQUEST_UPDATE_CLASSROOM_SUCCESS]: (state, action) => {
     let { classRoom } = action;
     state.classRoom.settings = classRoom;
+    return state;
+  },
+  [REQUEST_REMOVE_USER_SUCCESS]: (state, action) => {
+    let { studentId } = action;
+    state.classRoom.students = state.classRoom.students.filter(
+      (student) => student._id !== studentId
+    );
+    return state;
+  },
+  [REQUEST_UPDATE_COMMENT_SUCCESS]: (state, action) => {
+    state.comments = { ...state.comments, ...action.comments };
+    return state;
+  },
+  [REQUEST_REMOVE_COMMENT_SUCCESS]: (state, action) => {
+    state.comments = { ...state.comments, ...action.comments };
+    return state;
+  },
+  [REQUEST_GET_GRADE_ACTIVITIES_SUCCESS]: (state, action) => {
+    let { pageSize, total, pageNumber, data } = action;
+    state.gradeActivities = {
+      total,
+      pageSize,
+      pageNumber,
+      data,
+      hasFetched: true,
+    };
+    return state;
+  },
+  [REQUEST_GET_COMMENTS_SUCCESS]: (state, action) => {
+    let { pageSize, total, pageNumber, data } = action;
+    state.comments = {
+      total,
+      pageSize,
+      pageNumber,
+      data,
+      hasFetched: true,
+    };
+    return state;
+  },
+  [REQUEST_GET_STUDENTS_SUCCESS]: (state, action) => {
+    let { pageSize, total, pageNumber, data } = action;
+    state.students = {
+      total,
+      pageSize,
+      pageNumber,
+      data,
+      hasFetched: true,
+    };
     return state;
   },
 });

@@ -24,8 +24,15 @@ const {
   REQUEST_CLASS_ROOM_FAILURE,
   REQUEST_CLASS_ROOM_SUCCESS,
   REQUEST_POST_COMMENT_SUCCESS,
-  REQUEST_GRADE_COMMENT_SUCCESS,
+  REQUEST_GRADE_SUCCESS,
   REQUEST_UPDATE_CLASSROOM_SUCCESS,
+  REQUEST_REMOVE_USER_FAILURE,
+  REQUEST_REMOVE_USER_SUCCESS,
+  REQUEST_UPDATE_COMMENT_SUCCESS,
+  REQUEST_REMOVE_COMMENT_SUCCESS,
+  REQUEST_GET_GRADE_ACTIVITIES_SUCCESS,
+  REQUEST_GET_COMMENTS_SUCCESS,
+  REQUEST_GET_STUDENTS_SUCCESS,
 } = userConstants;
 
 export const invalidAvatar = () => {
@@ -266,7 +273,8 @@ export const postComment = (data, callback) => {
     return userClient
       .postComment(data)
       .then((res) => {
-        if (res && res.error_code) {
+        console.log(res);
+        if (res && res.body.error_code) {
           return errorRes(
             dispatch,
             null,
@@ -282,7 +290,7 @@ export const postComment = (data, callback) => {
         successRes(
           dispatch,
           success,
-          res.body,
+          res.body.data,
           {
             show: true,
             type: 'success',
@@ -329,18 +337,18 @@ export const getUserById = (userId, callback = () => {}) => {
   };
 };
 
-export const gradeActivi = (data, callback) => {
-  let success = ({ userUnits, studentId }) => ({
-    type: REQUEST_GRADE_COMMENT_SUCCESS,
-    userUnits,
+export const gradeActivi = (data, isRegrade, callback) => {
+  let success = ({ activiti, studentId }) => ({
+    type: REQUEST_GRADE_SUCCESS,
+    activiti,
     studentId,
   });
-  return (dispatch) => {
+  return (dispatch, getState) => {
     return userClient
       .gradeActivi(data)
       .then((res) => {
-        console.log('res', res.body);
-        if (res && res.error_code) {
+        console.log(res);
+        if (res && res.body.error_code) {
           return errorRes(
             dispatch,
             null,
@@ -356,7 +364,7 @@ export const gradeActivi = (data, callback) => {
         successRes(
           dispatch,
           success,
-          { userUnits: res.body, studentId: data.userId },
+          { activiti: data.type, studentId: data.userId },
           {
             show: true,
             type: 'success',
@@ -364,6 +372,17 @@ export const gradeActivi = (data, callback) => {
           },
           callback
         );
+        if (!isRegrade) {
+          let state = getState();
+          let { classRoom, gradeActivities } = state.user;
+          //after grade activi fetch new list grade
+          dispatch(
+            getGradeActivites({
+              classroomId: classRoom._id,
+              ...gradeActivities,
+            })
+          );
+        }
       })
       .catch((err) => {
         console.log('err', err);
@@ -416,6 +435,231 @@ export const updateClassRoom = (data, callback = () => {}) => {
           },
           callback
         );
+      })
+      .catch((err) => {
+        errorRes(dispatch, null, err, null, callback);
+      });
+  };
+};
+
+export const removeUser = (data, callback = () => {}) => {
+  let failure = () => {
+    return {
+      type: REQUEST_REMOVE_USER_FAILURE,
+    };
+  };
+  let success = () => {
+    return {
+      type: REQUEST_REMOVE_USER_SUCCESS,
+      studentId: data.studentId,
+    };
+  };
+  return (dispatch) => {
+    return userClient
+      .removeUser(data)
+      .then((res) => {
+        if (res.error_code) {
+          return errorRes(
+            dispatch,
+            null,
+            res,
+            {
+              show: true,
+              type: 'warning',
+              title: 'Remove student faild',
+            },
+            callback
+          );
+        }
+        successRes(
+          dispatch,
+          success,
+          res.data,
+          {
+            show: true,
+            type: 'success',
+            title: 'Remove student successfully.',
+          },
+          callback
+        );
+      })
+      .catch((err) => {
+        errorRes(dispatch, failure, err, null, callback);
+      });
+  };
+};
+
+export const updateComment = (data, callback = () => {}) => {
+  console.log('updateComment', data);
+  let success = (comments) => ({
+    type: REQUEST_UPDATE_COMMENT_SUCCESS,
+    comments,
+  });
+  return (dispatch) => {
+    return userClient
+      .updateComment(data)
+      .then((res) => {
+        console.log('updateComment', res);
+        if (res && res.error_code) {
+          return errorRes(
+            dispatch,
+            null,
+            res,
+            {
+              show: true,
+              type: 'warning',
+              title: 'Update Failed',
+            },
+            callback
+          );
+        }
+        successRes(
+          dispatch,
+          success,
+          res.data,
+          {
+            show: true,
+            type: 'success',
+            title: 'Update Successfully',
+          },
+          callback
+        );
+      })
+      .catch((err) => {
+        errorRes(dispatch, null, err, null, callback);
+      });
+  };
+};
+
+export const removeComment = (
+  { classRoomId, commentId, pageSize, pageNumber },
+  callback = () => {}
+) => {
+  let success = (comments) => {
+    return {
+      type: REQUEST_REMOVE_COMMENT_SUCCESS,
+      comments,
+    };
+  };
+  return (dispatch) => {
+    return userClient
+      .removeComment(
+        { classRoomId, commentId },
+        { page_size: pageSize, page_number: pageNumber }
+      )
+      .then((res) => {
+        console.log('removeComment', res);
+        if (res.error_code) {
+          return errorRes(
+            dispatch,
+            null,
+            res,
+            {
+              show: true,
+              type: 'warning',
+              title: 'Remove comment faild',
+            },
+            callback
+          );
+        }
+        successRes(
+          dispatch,
+          success,
+          res.data,
+          {
+            show: true,
+            type: 'success',
+            title: 'Remove comment successfully.',
+          },
+          callback
+        );
+      })
+      .catch((err) => {
+        errorRes(dispatch, null, err, null, callback);
+      });
+  };
+};
+
+export const getGradeActivites = (
+  { classroomId, pageNumber, pageSize },
+  callback = () => {}
+) => {
+  let success = (data) => {
+    return {
+      type: REQUEST_GET_GRADE_ACTIVITIES_SUCCESS,
+      ...data,
+    };
+  };
+  return (dispatch) => {
+    return userClient
+      .getGradeActivites(classroomId, {
+        page_number: pageNumber,
+        page_size: pageSize,
+      })
+      .then((res) => {
+        if (res.data.error_code) {
+          return errorRes(dispatch, null, res.data, null, callback);
+        }
+        dispatch(success(res.data));
+        callback();
+      })
+      .catch((err) => {
+        errorRes(dispatch, null, err, null, callback);
+      });
+  };
+};
+
+export const getComments = (
+  { classroomId, pageNumber, pageSize },
+  callback = () => {}
+) => {
+  let success = (data) => {
+    return {
+      type: REQUEST_GET_COMMENTS_SUCCESS,
+      ...data,
+    };
+  };
+  return (dispatch) => {
+    return userClient
+      .getComments(classroomId, {
+        page_number: pageNumber,
+        page_size: pageSize,
+      })
+      .then((res) => {
+        if (res.data.error_code) {
+          return errorRes(dispatch, null, res.data, null, callback);
+        }
+        dispatch(success(res.data));
+        callback();
+      })
+      .catch((err) => {
+        errorRes(dispatch, null, err, null, callback);
+      });
+  };
+};
+
+export const getStudents = (
+  { classroomId, pageNumber, pageSize },
+  callback = () => {}
+) => {
+  let success = (data) => {
+    return {
+      type: REQUEST_GET_STUDENTS_SUCCESS,
+      ...data,
+    };
+  };
+  return (dispatch) => {
+    return userClient
+      .getStudents(classroomId, {
+        page_number: pageNumber,
+        page_size: pageSize,
+      })
+      .then((res) => {
+        if (res.data.error_code) {
+          return errorRes(dispatch, null, res.data, null, callback);
+        }
+        dispatch(success(res.data));
+        callback();
       })
       .catch((err) => {
         errorRes(dispatch, null, err, null, callback);

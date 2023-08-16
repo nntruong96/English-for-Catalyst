@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux';
 import { checkScorePass } from 'util/Constants';
 import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 import { useNavigate } from 'react-router';
+import { isEmptyAns } from 'util/Constants';
 export default function MultipleChoice({
   data,
   unitNumber,
@@ -106,7 +107,7 @@ export default function MultipleChoice({
     let disabled = !Boolean(ansRender.length);
     for (let i = 0; i < data?.data?.length; i++) {
       let item = ansRender[i];
-      if (item === undefined || item === null) {
+      if (isEmptyAns(item)) {
         disabled = true;
       }
     }

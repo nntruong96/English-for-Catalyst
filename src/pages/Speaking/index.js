@@ -98,6 +98,7 @@ export default function Speaking({
           userId,
           classroomId,
         },
+        Number(userActiviti.status) !== 1,
         (err, res) => {
           setUpdating(false);
           if (err) {

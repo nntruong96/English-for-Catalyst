@@ -62,7 +62,6 @@ export default function Index(props) {
       setAutoHideTimer(autoHideTime);
     }
   }, [show, autoHideTime, title, message, timeCreate]);
-  console.log({ message, title, subtitle, show, type, autoHideTime, action });
   let data = TYPE[type] || TYPE['info'];
   return (
     <Box

@@ -23,7 +23,7 @@ export default function TitlePage({ unitNumber, title, onBack, ...style }) {
           if (onBack) {
             return onBack();
           }
-          return unitNumber ? navigate('/unit/' + unitNumber) : navigate('/');
+          return unitNumber ? navigate('/unit/' + unitNumber) : navigate(-1);
         }}
       >
         <Icon as={BsArrowLeftShort} w="36px" h="36px" color="white" />

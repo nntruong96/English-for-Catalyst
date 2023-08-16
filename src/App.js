@@ -14,27 +14,44 @@ import { getUnits } from 'redux/actions/documents';
 import SnackBar from 'components/SnackBar';
 import 'app.css';
 const SwitchRoutes = () => {
-  const { loggedIn } = useShallowEqualSelector((state) => {
-    return {
-      loggedIn: state.auth.loggedIn,
-    };
-  });
+  const { loggedIn, isFetchingUser, isFetchingUnit } = useShallowEqualSelector(
+    (state) => {
+      return {
+        loggedIn: state.auth.loggedIn,
+        isFetchingUser: state.user.isFetching,
+        isFetchingUnit: state.documents.isFetching,
+      };
+    }
+  );
   return (
     <>
       <Routes>
         <Route path={'*'} element={<Header />} key={0} />
       </Routes>
       <Container maxW="container.lg">
-        <Routes>
-          {indexRoutes.map((prop, key) => {
-            if (prop.requireLogin && !loggedIn) {
-              return null;
-            }
-            return (
-              <Route path={prop.path} element={prop.component} key={key} />
-            );
-          })}
-        </Routes>
+        {isFetchingUnit || isFetchingUser ? ( //render spiner there
+          <Box
+            w="full"
+            h="full"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            position="absolute"
+          >
+            <Spinner color="blue" />
+          </Box>
+        ) : (
+          <Routes>
+            {indexRoutes.map((prop, key) => {
+              if (prop.requireLogin && !loggedIn) {
+                return null;
+              }
+              return (
+                <Route path={prop.path} element={prop.component} key={key} />
+              );
+            })}
+          </Routes>
+        )}
       </Container>
     </>
   );
@@ -56,45 +73,26 @@ function App() {
 
 function ContainerApp({ children }) {
   const dispatch = useDispatch();
-  const {
-    loggedIn,
-    hasFetched,
-    hasFetchedUnit,
-    isFetchingUser,
-    isFetchingUnit,
-  } = useShallowEqualSelector((state) => {
-    return {
-      loggedIn: state.auth.loggedIn,
-      isFetchingUser: state.user.isFetching,
-      hasFetched: state.user.hasFetched,
-      hasFetchedUnit: state.documents.hasFetched,
-      isFetchingUnit: state.documents.isFetching,
-      units: state.documents.units,
-    };
-  });
+  const { loggedIn, hasFetched, hasFetchedUnit, isFetchingUser } =
+    useShallowEqualSelector((state) => {
+      return {
+        loggedIn: state.auth.loggedIn,
+        isFetchingUser: state.user.isFetching,
+        hasFetched: state.user.hasFetched,
+        hasFetchedUnit: state.documents.hasFetched,
+        units: state.documents.units,
+      };
+    });
   useEffect(() => {
     if (loggedIn && !hasFetched && !isFetchingUser) {
       dispatch(fetchUser());
       dispatch(fetchClassRoom());
     }
-    if (!hasFetchedUnit && !isFetchingUnit) {
+    if (!hasFetchedUnit) {
+      console.log('getUnits');
       dispatch(getUnits());
     }
   }, [loggedIn]);
-  if (isFetchingUnit || isFetchingUser) {
-    //render spiner there
-    return (
-      <Box
-        w="full"
-        h="full"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Spinner color="blue" />
-      </Box>
-    );
-  }
 
   return (
     <Box h="full" overflow="auto">

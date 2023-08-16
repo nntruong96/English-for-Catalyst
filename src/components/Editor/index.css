@@ -3,7 +3,10 @@
 }
 .editer-view .ck.ck-editor__main > .ck-editor__editable:not(.ck-focused) {
   border: unset !important;
+  background: transparent;
+  padding: 0px;
 }
+
 .editer-view .ck-editor__main p {
   margin-top: 0px !important;
 }

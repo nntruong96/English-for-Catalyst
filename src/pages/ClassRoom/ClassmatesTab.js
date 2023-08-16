@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  *
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Text,
@@ -13,10 +14,13 @@ import {
   Th,
   Td,
   TableContainer,
+  Spinner,
 } from '@chakra-ui/react';
-import { getName } from 'util/Constants';
-import { calGrade } from 'util/Constants';
 import UserName from 'components/UserName';
+import { useDispatch } from 'react-redux';
+import { getStudents } from 'redux/actions/userActions';
+import Pagination from 'components/Pagination';
+import useShallowEqualSelector from 'redux/customHook/useShallowEqualSelector';
 const HEADER = [
   {
     text: 'Name',
@@ -34,14 +38,45 @@ const HEADER = [
     text: 'Teacher Grade',
   },
 ];
-export default function Index({ classRoom, units, user }) {
-  let { students = [] } = classRoom;
-  console.log('students', students);
-
+export default function Index({ classRoom }) {
+  const [requesting, setRequesting] = useState(false);
+  const dispatch = useDispatch();
+  const { students } = useShallowEqualSelector((state) => ({
+    students: state.user.students,
+  }));
+  const { data, pageSize, pageNumber, hasFetched, total } = students;
+  const handlePageClick = (pageNumber) => {
+    if (requesting) {
+      return;
+    }
+    setRequesting(true);
+    dispatch(
+      getStudents({ classroomId: classRoom._id, pageNumber, pageSize }, () => {
+        setRequesting(false);
+      })
+    );
+  };
+  useEffect(() => {
+    if (!hasFetched) {
+      setRequesting(true);
+      dispatch(
+        getStudents(
+          {
+            classroomId: classRoom._id,
+            pageSize,
+            pageNumber,
+          },
+          () => {
+            setRequesting(false);
+          }
+        )
+      );
+    }
+  }, []);
   return (
     <Box>
-      <TableContainer>
-        <Table variant="simple">
+      <TableContainer position="relative">
+        <Table variant="simple" mb="22px">
           <Thead>
             <Tr>
               {HEADER.map((item, index) => (
@@ -51,11 +86,8 @@ export default function Index({ classRoom, units, user }) {
           </Thead>
 
           <Tbody>
-            {students.map((item, index) => {
-              let grade =
-                Number(user.role) === 2
-                  ? item.grade
-                  : calGrade({ rootUnits: units, userUnit: item.userUnits });
+            {data.map((item, index) => {
+              let grade = item.grade;
               return (
                 <Tr key={index}>
                   <Td>
@@ -78,6 +110,27 @@ export default function Index({ classRoom, units, user }) {
             })}
           </Tbody>
         </Table>
+        <Pagination
+          onPageChange={handlePageClick}
+          pageSize={pageSize}
+          total={total}
+          pageNumber={Number(pageNumber)}
+          disabled={requesting}
+        />
+
+        {requesting && (
+          <Box
+            position="absolute"
+            w="full"
+            h="full"
+            top="0px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Spinner />
+          </Box>
+        )}
       </TableContainer>
     </Box>
   );

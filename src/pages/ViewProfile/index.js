@@ -4,9 +4,9 @@
  * @author  NNTruong / nhuttruong6496@gmail.com
  */
 import React, { useEffect, useState } from 'react';
-import { Box, Text } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import UserInformation from 'components/UserInformation';
-import { useParams, Navigate } from 'react-router';
+import { useParams } from 'react-router';
 import { getUserById } from 'redux/actions/userActions';
 import { useDispatch } from 'react-redux';
 import Grade from 'components/Grade';
@@ -17,12 +17,7 @@ import LoadingPage from 'components/LoadingPage';
 export default function Index(props) {
   const [user, setUser] = useState({});
   const [requesting, setRequesting] = useState(true);
-  //   const { loggedIn, userInfo } = useShallowEqualSelector((state) => {
-  //     return {
-  //       loggedIn: state.auth.loggedIn,
-  //       userInfo: state.user.user,
-  //     };
-  //   });
+  const [error, setError] = useState(false);
   let params = useParams();
   const dispatch = useDispatch();
   let { id } = params;
@@ -32,13 +27,24 @@ export default function Index(props) {
       getUserById(id, (err, res) => {
         if (!err) {
           setUser(res);
+        } else {
+          console.log(err);
+          setError(true);
         }
         setRequesting(false);
       })
     );
   }, [id]);
+  console.log('user', user);
   if (requesting) {
     return <LoadingPage />;
+  }
+  if (error) {
+    return (
+      <Flex alignItems="center" justifyContent="center" h="full">
+        Not found user
+      </Flex>
+    );
   }
   return (
     <Box mt="22px" pb="22px">

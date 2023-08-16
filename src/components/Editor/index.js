@@ -11,6 +11,7 @@ export default function Index({
   value = '',
   onChange = () => {},
   isView,
+  disabled,
   ...style
 }) {
   const _onChange = (e, editor) => onChange(editor.getData());
@@ -35,6 +36,7 @@ export default function Index({
           },
         }}
         onChange={_onChange}
+        disabled={isView || disabled}
         {...style}
       />
     </Box>
